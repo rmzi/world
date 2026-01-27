@@ -132,17 +132,49 @@ export default function AudioPlayer() {
             reverbLfo.connect(reverbLfoGain);
             reverbLfo.start();
 
-            // === DELAY (longer, more spacious reverb-like effect) ===
+            // === ALGORITHMIC REVERB (multiple delay lines for spacious tail) ===
+            // Primary delay line
             const delay = ctx.createDelay(2.0);
             delay.delayTime.setValueAtTime(0.4, ctx.currentTime);
             reverbLfoGain.connect(delay.delayTime); // LFO modulates delay time
             
             const delayGain = ctx.createGain();
-            delayGain.gain.setValueAtTime(0.25, ctx.currentTime); // More wet signal
+            delayGain.gain.setValueAtTime(0.35, ctx.currentTime); // More wet signal
             
             const delayFilter = ctx.createBiquadFilter();
             delayFilter.type = 'lowpass';
-            delayFilter.frequency.setValueAtTime(800, ctx.currentTime); // Darker reverb
+            delayFilter.frequency.setValueAtTime(600, ctx.currentTime); // Darker reverb
+            
+            // Secondary delay (longer, for extended tail)
+            const delay2 = ctx.createDelay(4.0);
+            delay2.delayTime.setValueAtTime(0.73, ctx.currentTime); // Prime number ratio
+            
+            const delay2Gain = ctx.createGain();
+            delay2Gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            
+            const delay2Filter = ctx.createBiquadFilter();
+            delay2Filter.type = 'lowpass';
+            delay2Filter.frequency.setValueAtTime(400, ctx.currentTime); // Even darker
+            
+            // Third delay (very long, ghostly)
+            const delay3 = ctx.createDelay(5.0);
+            delay3.delayTime.setValueAtTime(1.17, ctx.currentTime); // Another prime ratio
+            
+            const delay3Gain = ctx.createGain();
+            delay3Gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            
+            const delay3Filter = ctx.createBiquadFilter();
+            delay3Filter.type = 'lowpass';
+            delay3Filter.frequency.setValueAtTime(300, ctx.currentTime); // Very dark
+            
+            // All-pass filters for diffusion (makes reverb more natural)
+            const allpass1 = ctx.createBiquadFilter();
+            allpass1.type = 'allpass';
+            allpass1.frequency.setValueAtTime(200, ctx.currentTime);
+            
+            const allpass2 = ctx.createBiquadFilter();
+            allpass2.type = 'allpass';
+            allpass2.frequency.setValueAtTime(600, ctx.currentTime);
 
             // === NOISE LAYER (liminal texture) ===
             // Create noise buffer
@@ -206,11 +238,28 @@ export default function AudioPlayer() {
                 const masterGain = ctx.createGain();
                 masterGain.gain.setValueAtTime(0, ctx.currentTime);
 
-            // Delay feedback loop
-            delay.connect(delayFilter);
+            // === REVERB NETWORK (interconnected delays for lush tail) ===
+            // Primary delay loop with allpass diffusion
+            delay.connect(allpass1);
+            allpass1.connect(delayFilter);
             delayFilter.connect(delayGain);
-            delayGain.connect(delay); // Feedback
-            delayGain.connect(limiter); // Output through limiter
+            delayGain.connect(delay); // Primary feedback
+            delayGain.connect(delay2Gain); // Cross-feed to delay 2
+            delayGain.connect(limiter);
+            
+            // Secondary delay loop
+            delay2.connect(allpass2);
+            allpass2.connect(delay2Filter);
+            delay2Filter.connect(delay2Gain);
+            delay2Gain.connect(delay2); // Secondary feedback
+            delay2Gain.connect(delay3Gain); // Cross-feed to delay 3
+            delay2Gain.connect(limiter);
+            
+            // Third delay (longest tail)
+            delay3.connect(delay3Filter);
+            delay3Filter.connect(delay3Gain);
+            delay3Gain.connect(delay3); // Tertiary feedback
+            delay3Gain.connect(limiter);
 
             // === CONNECT GRAPH ===
             // Oscillators -> Filter -> Panner -> Breath modulation -> Master
@@ -234,6 +283,9 @@ export default function AudioPlayer() {
                 oscs: [...oscs, subOsc], subGain,
                 gain: masterGain, filter, panner, 
                 delay, delayGain, delayFilter,
+                delay2, delay2Gain, delay2Filter,
+                delay3, delay3Gain, delay3Filter,
+                allpass1, allpass2,
                 breathLfo, breathLfoGain, breathGain,
                 panLfo, panLfoGain,
                 reverbLfo, reverbLfoGain,
@@ -294,20 +346,32 @@ export default function AudioPlayer() {
         // - Hue rotates through octaves and oscillator types
         // - Saturation = complexity (harmonics, resonance)
         // - Lightness = attack/brightness
-        const baseVolume = Math.min(0.4, 0.08 + intensity * 0.32) * volume * 3;
+        
+        // Random variation for more organic feel
+        const isGhostPluck = Math.random() < 0.15; // 15% chance of ghost pluck
+        const volumeVariation = 0.7 + Math.random() * 0.6; // 70-130% volume
+        const baseVolume = Math.min(0.4, 0.08 + intensity * 0.32) * volume * 3 * volumeVariation;
+        const ghostMultiplier = isGhostPluck ? 0.3 : 1; // Ghost plucks are much quieter
+        const finalVolume = baseVolume * ghostMultiplier;
         
         // Hue affects octave shift - full rotation = 2 octaves
         const octaveShift = Math.pow(2, Math.floor(fillHSL.h * 3) - 1); // 0.5x, 1x, 2x, or 4x
         const finalFreq = frequency * octaveShift;
         
         // Lightness affects attack (dark = soft pad-like, light = sharp pluck)
-        const attackTime = 0.001 + (1 - fillHSL.l) * 0.05;
+        // Ghost plucks always have soft attack
+        const attackVariation = 0.8 + Math.random() * 0.4; // Random attack variation
+        const attackTime = isGhostPluck 
+            ? 0.08 + Math.random() * 0.12 // Ghost: very soft 80-200ms
+            : (0.001 + (1 - fillHSL.l) * 0.06) * attackVariation;
         
         // Displacement affects release - bigger displacement = much longer release
-        const releaseMultiplier = 1 + Math.min(displacement, 2) * 3; // 1x to 7x release
+        // Extended release times for liminal atmosphere (1-4 seconds)
+        const releaseMultiplier = 1.5 + Math.min(displacement, 2) * 4; // 1.5x to 9.5x release
         
         // Base decay time, dramatically extended by displacement
-        const decayTime = (0.2 + strokeWidth * 2) * releaseMultiplier;
+        // Longer base decay for atmospheric tails
+        const decayTime = (0.4 + strokeWidth * 3) * releaseMultiplier;
         
         activePlucksRef.current++;
 
@@ -320,14 +384,15 @@ export default function AudioPlayer() {
         // Envelope with color-influenced shape - long gentle release for distant travels
         const envelope = ctx.createGain();
         envelope.gain.setValueAtTime(0, ctx.currentTime);
-        envelope.gain.linearRampToValueAtTime(baseVolume, ctx.currentTime + attackTime);
+        envelope.gain.linearRampToValueAtTime(finalVolume, ctx.currentTime + attackTime);
         
         // Saturation affects sustain curve (high sat = more sustain)
-        const sustainLevel = baseVolume * (0.4 + fillHSL.s * 0.4);
-        // Longer, gentler release curve
-        const releaseTime = decayTime * 0.5;
-        envelope.gain.setTargetAtTime(sustainLevel, ctx.currentTime + attackTime, releaseTime);
-        envelope.gain.setTargetAtTime(0.001, ctx.currentTime + attackTime + releaseTime, decayTime * 0.4);
+        const sustainLevel = finalVolume * (0.5 + fillHSL.s * 0.35);
+        // Much longer, gentler release curve for liminal atmosphere
+        const releaseTime = decayTime * 0.6;
+        envelope.gain.setTargetAtTime(sustainLevel, ctx.currentTime + attackTime, releaseTime * 0.3);
+        // Very slow final fade for lingering tail
+        envelope.gain.setTargetAtTime(0.001, ctx.currentTime + attackTime + releaseTime, decayTime * 0.5);
 
         // No pitch bend - keep frequency stable for cleaner sound
 
@@ -367,9 +432,15 @@ export default function AudioPlayer() {
         filter.connect(panner);
         panner.connect(ctx.destination);
 
-        // Also send to delay if it exists
-        if (nodesRef.current.delay && nodesRef.current.delayGain) {
-            panner.connect(nodesRef.current.delayGain);
+        // Send to all reverb delay lines for lush tail
+        if (nodesRef.current.delay) {
+            panner.connect(nodesRef.current.delay);
+        }
+        if (nodesRef.current.delay2) {
+            panner.connect(nodesRef.current.delay2);
+        }
+        if (nodesRef.current.delay3) {
+            panner.connect(nodesRef.current.delay3);
         }
 
         osc.start(ctx.currentTime);

@@ -1,13 +1,37 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+import { EffectComposer, ChromaticAberration, Noise } from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
 import PointCloudSphere from './PointCloudSphere';
 import VoronoiBackground from './VoronoiBackground';
 import { useStore } from '../store';
 
-// Self cloud component placeholder
-import { useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
-import * as THREE from 'three';
+// Audio-reactive post-processing effects
+function PostEffects() {
+    const { audioLevel } = useStore();
+    
+    // Calculate offset based on audio level (simple, no ref needed)
+    const offset = 0.001 + audioLevel * 0.003;
+    
+    // Grain intensity slightly boosted by audio
+    const grainIntensity = 0.1 + audioLevel * 0.05;
+    
+    return (
+        <EffectComposer multisampling={0}>
+            <ChromaticAberration
+                blendFunction={BlendFunction.NORMAL}
+                offset={[offset, offset]}
+            />
+            <Noise
+                premultiply
+                blendFunction={BlendFunction.SOFT_LIGHT}
+                opacity={grainIntensity}
+            />
+        </EffectComposer>
+    );
+}
 
 // Tesseract style component for the "Self" page
 function SelfCube() {
@@ -71,6 +95,7 @@ export default function Scene() {
                     <VoronoiBackground />
                     <PointCloudSphere visible={true} />
                     {sceneState === 'self-cloud' && <SelfCube />}
+                    <PostEffects />
                 </Suspense>
             </Canvas>
         </div>

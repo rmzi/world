@@ -19,6 +19,7 @@ const PointCloudMaterial = shaderMaterial(
         uStrokeWidth: 0.12,
         uPointSize: 300.0,
         uStressColor: new THREE.Color('#ff4081'), // Color when stressed/displaced
+        uAudioLevel: 0.0, // Audio reactivity (0-1)
     },
     // Vertex Shader
     `
@@ -28,12 +29,14 @@ const PointCloudMaterial = shaderMaterial(
   uniform float uDeformStrength;
   uniform float uExplode;
   uniform float uPointSize;
+  uniform float uAudioLevel;
   
   attribute float displacement;
   
   varying vec3 vPosition;
   varying float vDisplacement;
   varying float vDepth;
+  varying float vAudioLevel;
   
   void main() {
     vec3 pos = position;
@@ -45,13 +48,15 @@ const PointCloudMaterial = shaderMaterial(
     vec4 viewPosition = viewMatrix * modelMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * viewPosition;
     
-    // Size varies with displacement - gets slightly bigger when stressed
+    // Size varies with displacement AND audio level - pulses with sound
     float sizeBoost = 1.0 + displacement * 0.3;
-    gl_PointSize = (uPointSize * sizeBoost) / -viewPosition.z;
+    float audioPulse = 1.0 + uAudioLevel * 0.15; // ±15% size variance with audio
+    gl_PointSize = (uPointSize * sizeBoost * audioPulse) / -viewPosition.z;
     
     vPosition = pos;
     vDisplacement = displacement;
-    vDepth = -viewPosition.z; // Pass depth to fragment shader
+    vDepth = -viewPosition.z;
+    vAudioLevel = uAudioLevel;
   }
   `,
     // Fragment Shader
@@ -62,9 +67,11 @@ const PointCloudMaterial = shaderMaterial(
   uniform float uStrokeWidth;
   uniform float uOpacity;
   uniform float uTime;
+  uniform float uAudioLevel;
   
   varying float vDisplacement;
   varying float vDepth;
+  varying float vAudioLevel;
   
   // HSL to RGB conversion for hue shifting
   vec3 hsl2rgb(vec3 c) {
@@ -122,11 +129,11 @@ const PointCloudMaterial = shaderMaterial(
     // Direct blend toward stress color - much stronger
     vec3 fillBlend = mix(baseColor, stressedColor, stressEased * 0.9);
     
-    // Hue shift - more dramatic rotation
+    // Hue shift - more dramatic rotation + audio brightness boost
     vec3 hsl = rgb2hsl(baseColor);
     hsl.x = mod(hsl.x + stressEased * 0.35, 1.0); // Stronger hue rotation
-    hsl.y = min(1.0, hsl.y + stressEased * 0.6);  // Much more saturation
-    hsl.z = min(1.0, hsl.z + stressEased * 0.15); // Slight brightness boost
+    hsl.y = min(1.0, hsl.y + stressEased * 0.6 + vAudioLevel * 0.15);  // Saturation + audio
+    hsl.z = min(1.0, hsl.z + stressEased * 0.15 + vAudioLevel * 0.1); // Brightness + audio pulse
     vec3 hueShifted = hsl2rgb(hsl);
     
     // Combine both effects - favor the stress color more
@@ -201,7 +208,7 @@ export default function PointCloudSphere({ visible = true }) {
         volume, setVolume, isAudioPlaying, toggleAudio, 
         sceneState, isPaused, params, setParams, randomizeParams,
         scatterCount, pluckTrigger, hasEntered,
-        signalActive, toggleSignal, scatter, isEmbedOpen
+        signalActive, toggleSignal, scatter, isEmbedOpen, audioLevel
     } = useStore();
 
     // Leva control panel
@@ -800,6 +807,13 @@ export default function PointCloudSphere({ visible = true }) {
             if (materialRef.current.uStressColor && activeParams.stressColor) {
                 materialRef.current.uStressColor.lerp(new THREE.Color(activeParams.stressColor), 0.05);
             }
+            
+            // Update audio level for reactivity
+            materialRef.current.uAudioLevel = THREE.MathUtils.lerp(
+                materialRef.current.uAudioLevel || 0,
+                audioLevel,
+                0.15
+            );
         }
 
         // Rotate - sync all geometries

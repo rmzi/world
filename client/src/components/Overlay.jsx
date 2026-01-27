@@ -9,6 +9,9 @@ export default function Overlay() {
     const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal } = useStore();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showTouchHint, setShowTouchHint] = useState(false);
+    const [idleHint, setIdleHint] = useState(null); // 'drag', 'explore', 'scatter'
+    const [lastInteraction, setLastInteraction] = useState(Date.now());
+    const [interactionCount, setInteractionCount] = useState(0);
 
     const premiumEasing = [0.23, 1, 0.32, 1];
 
@@ -68,6 +71,40 @@ export default function Overlay() {
         window.addEventListener('pointerdown', hideHint);
         return () => window.removeEventListener('pointerdown', hideHint);
     }, []);
+
+    // Track interactions and reset idle timer
+    useEffect(() => {
+        const resetIdle = () => {
+            setLastInteraction(Date.now());
+            setIdleHint(null);
+            setInteractionCount(c => c + 1);
+        };
+        
+        const events = ['pointerdown', 'pointermove', 'keydown', 'scroll'];
+        events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
+        return () => events.forEach(e => window.removeEventListener(e, resetIdle));
+    }, []);
+
+    // Show contextual hints after 5s idle (but only if user hasn't interacted much)
+    useEffect(() => {
+        if (!hasEntered || activePage || interactionCount > 10) return;
+        
+        const checkIdle = setInterval(() => {
+            const idleTime = Date.now() - lastInteraction;
+            if (idleTime > 5000 && !idleHint) {
+                // Choose hint based on context
+                if (!isPaused && !isExpanded) {
+                    setIdleHint('drag');
+                } else if (isPaused && !isExpanded) {
+                    // Menu is open, no hint needed
+                } else if (isExpanded) {
+                    setIdleHint('scatter');
+                }
+            }
+        }, 1000);
+        
+        return () => clearInterval(checkIdle);
+    }, [hasEntered, activePage, isPaused, isExpanded, lastInteraction, idleHint, interactionCount]);
 
     return (
         <div
@@ -225,6 +262,34 @@ export default function Overlay() {
                             touch to play
                         </motion.p>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Idle Hint - very subtle 1-2 word prompts */}
+            <AnimatePresence>
+                {idleHint && hasEntered && !activePage && (
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 0.35, 0.35, 0] }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 4, times: [0, 0.15, 0.85, 1] }}
+                        onAnimationComplete={() => setIdleHint(null)}
+                        style={{
+                            position: 'fixed',
+                            bottom: idleHint === 'scatter' ? '90px' : '50%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '0.65rem',
+                            fontWeight: '300',
+                            letterSpacing: '0.25em',
+                            color: 'rgba(0,0,0,0.5)',
+                            textTransform: 'lowercase',
+                            pointerEvents: 'none',
+                            zIndex: 5,
+                        }}
+                    >
+                        {idleHint}
+                    </motion.p>
                 )}
             </AnimatePresence>
 

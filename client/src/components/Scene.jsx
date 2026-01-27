@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useRef, useMemo, useState } from 'react';
+import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGLTF, Text3D, Center } from '@react-three/drei';
@@ -60,6 +60,36 @@ function RotatingHead() {
     // Clone the scene so we can manipulate it
     const clonedScene = useMemo(() => scene.clone(), [scene]);
     
+    // Window-level event listeners for smooth dragging
+    useEffect(() => {
+        const handleMove = (e) => {
+            if (!isDragging.current) return;
+            const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
+            const deltaX = currentX - previousX.current;
+            velocityY.current = deltaX * 0.01;
+            if (headRef.current) {
+                headRef.current.rotation.y += deltaX * 0.01;
+            }
+            previousX.current = currentX;
+        };
+        
+        const handleUp = () => {
+            isDragging.current = false;
+        };
+        
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove);
+        window.addEventListener('mouseup', handleUp);
+        window.addEventListener('touchend', handleUp);
+        
+        return () => {
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('touchmove', handleMove);
+            window.removeEventListener('mouseup', handleUp);
+            window.removeEventListener('touchend', handleUp);
+        };
+    }, []);
+    
     useFrame((state, delta) => {
         if (headRef.current) {
             if (isDragging.current) {
@@ -84,21 +114,7 @@ function RotatingHead() {
         isDragging.current = true;
         previousX.current = e.clientX || e.touches?.[0]?.clientX || 0;
         velocityY.current = 0;
-    };
-    
-    const handlePointerMove = (e) => {
-        if (!isDragging.current) return;
-        const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
-        const deltaX = currentX - previousX.current;
-        velocityY.current = deltaX * 0.01;
-        if (headRef.current) {
-            headRef.current.rotation.y += deltaX * 0.01;
-        }
-        previousX.current = currentX;
-    };
-    
-    const handlePointerUp = () => {
-        isDragging.current = false;
+        document.body.style.cursor = 'grabbing';
     };
     
     return (
@@ -107,13 +123,12 @@ function RotatingHead() {
             position={[0, 0.3, 0]} 
             scale={8}
             onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
+            onPointerOver={() => { document.body.style.cursor = 'grab'; }}
+            onPointerOut={() => { if (!isDragging.current) document.body.style.cursor = 'auto'; }}
         >
-            {/* Invisible hitbox for easier interaction */}
-            <mesh visible={false}>
-                <sphereGeometry args={[0.15, 16, 16]} />
+            {/* Large invisible hitbox for easier interaction */}
+            <mesh position={[0, -1.68, 0]}>
+                <sphereGeometry args={[0.25, 16, 16]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
             {/* Center the head (it's positioned at y ~1.7 in original) */}

@@ -48,25 +48,74 @@ function PostEffects() {
     );
 }
 
-// Rotating head model for the "Self" page
+// Rotating head model for the "Self" page - drag to spin
 function RotatingHead() {
     const headRef = useRef();
     const { scene } = useGLTF('/head.glb');
+    const isDragging = useRef(false);
+    const previousX = useRef(0);
+    const velocityY = useRef(0);
+    const autoRotateSpeed = useRef(0.3);
     
     // Clone the scene so we can manipulate it
     const clonedScene = useMemo(() => scene.clone(), [scene]);
     
     useFrame((state, delta) => {
         if (headRef.current) {
-            // Gentle continuous rotation
-            headRef.current.rotation.y += delta * 0.3;
+            if (isDragging.current) {
+                // When dragging, don't auto-rotate
+                autoRotateSpeed.current = 0;
+            } else {
+                // Apply velocity with friction
+                velocityY.current *= 0.95;
+                headRef.current.rotation.y += velocityY.current;
+                
+                // Gradually restore auto-rotation
+                autoRotateSpeed.current += (0.3 - autoRotateSpeed.current) * 0.01;
+                headRef.current.rotation.y += delta * autoRotateSpeed.current;
+            }
             // Subtle bob
             headRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
         }
     });
     
+    const handlePointerDown = (e) => {
+        e.stopPropagation();
+        isDragging.current = true;
+        previousX.current = e.clientX || e.touches?.[0]?.clientX || 0;
+        velocityY.current = 0;
+    };
+    
+    const handlePointerMove = (e) => {
+        if (!isDragging.current) return;
+        const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
+        const deltaX = currentX - previousX.current;
+        velocityY.current = deltaX * 0.01;
+        if (headRef.current) {
+            headRef.current.rotation.y += deltaX * 0.01;
+        }
+        previousX.current = currentX;
+    };
+    
+    const handlePointerUp = () => {
+        isDragging.current = false;
+    };
+    
     return (
-        <group ref={headRef} position={[0, 0.3, 0]} scale={8}>
+        <group 
+            ref={headRef} 
+            position={[0, 0.3, 0]} 
+            scale={8}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
+        >
+            {/* Invisible hitbox for easier interaction */}
+            <mesh visible={false}>
+                <sphereGeometry args={[0.15, 16, 16]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
             {/* Center the head (it's positioned at y ~1.7 in original) */}
             <group position={[0, -1.68, 0]}>
                 <primitive object={clonedScene} />

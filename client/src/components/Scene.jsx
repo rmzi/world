@@ -169,11 +169,11 @@ function SplashText3D({ onEnter }) {
         return positions;
     }, []);
     
-    // Responsive positioning for mobile - centered under sphere
-    const textSize = isMobile ? 0.5 : 0.6;
-    const rmziPosition = isMobile ? [0, -2.5, 2] : [-2.5, -1.5, 5];
-    const enterPosition = isMobile ? [0, -3.2, 2] : [0, -1.5, 5];
-    const enterSize = isMobile ? 0.22 : 0.25;
+    // Centered on page
+    const textSize = isMobile ? 0.5 : 0.7;
+    const rmziPosition = [0, 0.3, 0];
+    const enterPosition = [0, -0.9, 0];
+    const enterSize = isMobile ? 0.18 : 0.22;
     
     useFrame((state) => {
         if (groupRef.current) {
@@ -206,34 +206,20 @@ function SplashText3D({ onEnter }) {
             <directionalLight position={[3, 3, 5]} intensity={0.6} />
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
-            {/* Animated letters "rmzi" - responsive position */}
-            {isMobile ? (
-                <Center position={rmziPosition}>
-                    <group>
-                        {letters.map((letter, i) => (
-                            <AnimatedLetter 
-                                key={i} 
-                                letter={letter} 
-                                index={i} 
-                                xOffset={letterPositions[i] * (textSize / 0.6)} 
-                                size={textSize}
-                            />
-                        ))}
-                    </group>
-                </Center>
-            ) : (
-                <group position={rmziPosition}>
+            {/* Animated letters "rmzi" - centered */}
+            <Center position={rmziPosition}>
+                <group>
                     {letters.map((letter, i) => (
                         <AnimatedLetter 
                             key={i} 
                             letter={letter} 
                             index={i} 
-                            xOffset={letterPositions[i] * (textSize / 0.6)} 
+                            xOffset={letterPositions[i] * (textSize / 0.7)} 
                             size={textSize}
                         />
                     ))}
                 </group>
-            )}
+            </Center>
             
             {/* "enter" button - responsive position */}
             {showEnter && (

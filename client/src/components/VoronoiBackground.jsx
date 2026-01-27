@@ -11,10 +11,10 @@ const isMobile = typeof navigator !== 'undefined' &&
 const VoronoiMaterial = shaderMaterial(
     {
         uTime: 0,
-        uColor1: new THREE.Color('#f5f5f5'),
-        uColor2: new THREE.Color('#e0e0e0'),
-        uLineColor: new THREE.Color('#c0c0c0'),
-        uOpacity: 0.6,
+        uColor1: new THREE.Color('#f0f0f0'),
+        uColor2: new THREE.Color('#d8d8d8'),
+        uLineColor: new THREE.Color('#a0a0a0'),
+        uOpacity: 0.8,
     },
     // Vertex Shader
     `

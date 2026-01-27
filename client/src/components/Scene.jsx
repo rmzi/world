@@ -128,8 +128,8 @@ function GhostBody({ visible }) {
                 0.1
             );
             
-            // Gentle floating motion at center of sphere
-            bodyRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
+            // Gentle floating motion centered in sphere (subtle bob only)
+            bodyRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
         }
     });
     
@@ -159,7 +159,7 @@ function GhostBody({ visible }) {
         <group 
             ref={bodyRef} 
             position={[0, 0, 0]} 
-            scale={2.2}
+            scale={2.0}
             rotation={[randomRotation.x, randomRotation.y, randomRotation.z]}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -171,8 +171,8 @@ function GhostBody({ visible }) {
                 <boxGeometry args={[1.2, 2, 0.5]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
-            {/* Center the body's navel in the sphere */}
-            <group position={[0, -0.45, 0]}>
+            {/* Offset model so navel/center aligns with sphere center (origin) */}
+            <group position={[0, -0.85, 0]}>
                 <primitive object={wireframeScene} />
             </group>
         </group>

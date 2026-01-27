@@ -875,19 +875,20 @@ export default function PointCloudSphere({ visible = true }) {
                 <pointCloudMaterial ref={materialRef} transparent depthWrite={true} depthTest={true} />
             </points>
 
+            {/* Only enable sphere interaction after entering (audio context loaded) */}
             <mesh
                 ref={dummySphereRef}
-                onPointerDown={(e) => {
+                onPointerDown={hasEntered ? (e) => {
                     e.stopPropagation();
                     setHoverPoint(e.point);
-                }}
-                onPointerMove={(e) => {
+                } : undefined}
+                onPointerMove={hasEntered ? (e) => {
                     if (e.buttons > 0) {
                         setHoverPoint(e.point);
                     }
-                }}
-                onPointerUp={() => setHoverPoint(null)}
-                onPointerOut={() => setHoverPoint(null)}
+                } : undefined}
+                onPointerUp={hasEntered ? () => setHoverPoint(null) : undefined}
+                onPointerOut={hasEntered ? () => setHoverPoint(null) : undefined}
             >
                 <sphereGeometry args={[2.2, 16, 16]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />

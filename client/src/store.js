@@ -100,7 +100,7 @@ export const useStore = create((set, get) => ({
     // Audio state
     isAudioPlaying: false,
     toggleAudio: () => set((state) => ({ isAudioPlaying: !state.isAudioPlaying })),
-    volume: 0.1,
+    volume: 0.4,
     setVolume: (val) => set({ volume: val }),
 
     // For off-screen transitions

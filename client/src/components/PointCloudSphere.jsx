@@ -218,7 +218,7 @@ export default function PointCloudSphere({ visible = true }) {
                 value: isAudioPlaying,
                 onChange: (v) => { if (v !== isAudioPlaying) toggleAudio(); }
             },
-            Volume: { value: volume, min: 0, max: 0.5, step: 0.01, onChange: (v) => setVolume(v) }
+            Volume: { value: volume, min: 0, max: 0.7, step: 0.01, onChange: (v) => setVolume(v) }
         }),
         Animation: folder({
             deformRadius: { 

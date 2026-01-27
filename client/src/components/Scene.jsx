@@ -310,7 +310,7 @@ function SplashText3D({ onEnter }) {
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
             {/* Animated letters "rmzi" - bottom left corner */}
-            <group position={[-3.2, -2.8, 3]}>
+            <group position={[-2.5, -1.5, 5]}>
                 {letters.map((letter, i) => (
                     <AnimatedLetter 
                         key={i} 
@@ -323,7 +323,7 @@ function SplashText3D({ onEnter }) {
             
             {/* "enter" button - below the sphere */}
             {showEnter && (
-                <Center position={[0, -2.8, 3]}>
+                <Center position={[0, -1.5, 5]}>
                     <Text3D
                         ref={enterRef}
                         font="/helvetiker_regular.typeface.json"

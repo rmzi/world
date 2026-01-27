@@ -5,3 +5,8 @@ dist
 .terraform
 *.tfstate
 *.tfstate.backup
+
+# Temporary model files
+extract-head.mjs
+model.glb
+model.gltf

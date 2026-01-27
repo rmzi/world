@@ -30,8 +30,10 @@ export default function Work() {
             zIndex: 10,
             pointerEvents: 'auto',
             padding: '60px 16px 100px',
+            overflowX: 'hidden',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',
+            boxSizing: 'border-box',
         }}>
             <motion.div
                 initial={{ opacity: 0 }}

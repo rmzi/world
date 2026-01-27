@@ -10,12 +10,19 @@ All notable changes to this project will be documented in this file.
 - Interactive T-pose body model on landing page (drag to spin)
 - Rotating head model on Self page
 - Extracted head.glb from full body model
+- Mobile performance optimizations (device detection)
 
 ### Changed
 - Navigation order: Self → Work → Connect
 - Splash screen now fully 3D (removed HTML overlay text)
 - T-pose model hidden after entering the experience
-- Splash layout: T-pose centered in sphere, "rmzi" bottom-left, "enter" below sphere
+- Splash layout: T-pose navel centered in sphere, "rmzi" bottom-left, "enter" below sphere
+
+### Performance
+- Mobile: Disable post-processing (chromatic aberration, film grain)
+- Mobile: Reduce 3D text geometry complexity (fewer curve/bevel segments)
+- Mobile: Lower DPR to [1, 1] instead of [1, 1.5]
+- Mobile: Reduce Voronoi background opacity
 
 ## [1.1.0] - 2026-01-27
 

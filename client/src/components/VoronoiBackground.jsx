@@ -4,6 +4,10 @@ import { shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { extend } from '@react-three/fiber';
 
+// Performance: detect mobile
+const isMobile = typeof navigator !== 'undefined' && 
+    /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 const VoronoiMaterial = shaderMaterial(
     {
         uTime: 0,
@@ -108,6 +112,8 @@ extend({ VoronoiMaterial });
 
 export default function VoronoiBackground() {
     const materialRef = useRef();
+    // Reduce opacity on mobile for performance (simpler GPU load)
+    const opacity = isMobile ? 0.3 : 0.6;
 
     useFrame((state, delta) => {
         if (materialRef.current) {
@@ -118,7 +124,12 @@ export default function VoronoiBackground() {
     return (
         <mesh position={[0, 0, -8]}>
             <planeGeometry args={[30, 30]} />
-            <voronoiMaterial ref={materialRef} transparent depthWrite={false} />
+            <voronoiMaterial 
+                ref={materialRef} 
+                transparent 
+                depthWrite={false}
+                uOpacity={opacity}
+            />
         </mesh>
     );
 }

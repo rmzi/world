@@ -9,9 +9,23 @@ import PointCloudSphere from './PointCloudSphere';
 import VoronoiBackground from './VoronoiBackground';
 import { useStore } from '../store';
 
-// Audio-reactive post-processing effects
+// Performance: detect mobile/low-power devices
+const isMobile = typeof navigator !== 'undefined' && 
+    /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+const quality = {
+    postProcessing: !isMobile,
+    textCurveSegments: isMobile ? 6 : 12,
+    textBevelSegments: isMobile ? 2 : 3,
+    dpr: isMobile ? [1, 1] : [1, 1.5],
+};
+
+// Audio-reactive post-processing effects (skip on mobile)
 function PostEffects() {
     const { audioLevel } = useStore();
+    
+    // Skip post-processing on mobile for performance
+    if (!quality.postProcessing) return null;
     
     // Calculate offset based on audio level (simple, no ref needed)
     const offset = 0.001 + audioLevel * 0.003;
@@ -157,8 +171,8 @@ function GhostBody({ visible }) {
                 <boxGeometry args={[1.2, 2, 0.5]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
-            {/* Center the body in the sphere */}
-            <group position={[0, -0.9, 0]}>
+            {/* Center the body's navel in the sphere */}
+            <group position={[0, -0.45, 0]}>
                 <primitive object={wireframeScene} />
             </group>
         </group>
@@ -225,11 +239,11 @@ function AnimatedLetter({ letter, index, xOffset }) {
                 font="/helvetiker_regular.typeface.json"
                 size={0.6}
                 height={0.08}
-                curveSegments={12}
+                curveSegments={quality.textCurveSegments}
                 bevelEnabled
                 bevelThickness={0.01}
                 bevelSize={0.01}
-                bevelSegments={3}
+                bevelSegments={quality.textBevelSegments}
             >
                 {letter}
                 <primitive object={material} ref={materialRef} attach="material" />
@@ -367,7 +381,7 @@ export default function Scene() {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
             <Canvas
                 camera={{ position: [0, 0, 9], fov: 50 }}
-                dpr={[1, 1.5]}
+                dpr={quality.dpr}
                 performance={{ min: 0.5 }}
                 gl={{ antialias: false, powerPreference: 'high-performance' }}
             >

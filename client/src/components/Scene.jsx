@@ -218,10 +218,10 @@ function SplashText3D({ onEnter }) {
         return positions;
     }, []);
     
-    // Centered on page
+    // Centered on page, in front of sphere (z=4 puts it closer to camera)
     const textSize = isMobile ? 0.5 : 0.7;
-    const rmziPosition = [0, 0.3, 0];
-    const enterPosition = [0, -0.9, 0];
+    const rmziPosition = [0, 0.3, 4];
+    const enterPosition = [0, -0.9, 4];
     const enterSize = isMobile ? 0.18 : 0.22;
     
     useFrame((state) => {

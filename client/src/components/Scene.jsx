@@ -114,8 +114,8 @@ function GhostBody({ visible }) {
                 0.1
             );
             
-            // Gentle floating motion
-            bodyRef.current.position.y = 1.3 + Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
+            // Gentle floating motion at center of sphere
+            bodyRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
         }
     });
     
@@ -144,8 +144,8 @@ function GhostBody({ visible }) {
     return (
         <group 
             ref={bodyRef} 
-            position={[0, 1.3, 0]} 
-            scale={2.8}
+            position={[0, 0, 0]} 
+            scale={2.2}
             rotation={[randomRotation.x, randomRotation.y, randomRotation.z]}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -157,7 +157,7 @@ function GhostBody({ visible }) {
                 <boxGeometry args={[1.2, 2, 0.5]} />
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
-            {/* Center the body */}
+            {/* Center the body in the sphere */}
             <group position={[0, -0.9, 0]}>
                 <primitive object={wireframeScene} />
             </group>
@@ -289,14 +289,14 @@ function SplashText3D({ onEnter }) {
     }), []);
     
     return (
-        <group ref={groupRef} position={[0, 0.5, 2]}>
+        <group ref={groupRef}>
             {/* Lighting for text */}
             <ambientLight intensity={0.5} />
             <directionalLight position={[3, 3, 5]} intensity={0.6} />
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
-            {/* Animated letters "rmzi" */}
-            <group position={[0, 0, 0]}>
+            {/* Animated letters "rmzi" - bottom left corner */}
+            <group position={[-3.2, -2.8, 3]}>
                 {letters.map((letter, i) => (
                     <AnimatedLetter 
                         key={i} 
@@ -307,18 +307,18 @@ function SplashText3D({ onEnter }) {
                 ))}
             </group>
             
-            {/* "enter" button */}
+            {/* "enter" button - below the sphere */}
             {showEnter && (
-                <Center position={[0, -0.8, 0]}>
+                <Center position={[0, -2.8, 3]}>
                     <Text3D
                         ref={enterRef}
                         font="/helvetiker_regular.typeface.json"
-                        size={0.18}
-                        height={0.03}
+                        size={0.25}
+                        height={0.04}
                         curveSegments={8}
                         bevelEnabled
-                        bevelThickness={0.005}
-                        bevelSize={0.005}
+                        bevelThickness={0.006}
+                        bevelSize={0.006}
                         bevelSegments={2}
                         material={enterMaterial}
                         onClick={onEnter}
@@ -335,7 +335,7 @@ function SplashText3D({ onEnter }) {
                     </Text3D>
                     {/* Invisible hitbox for easier clicking */}
                     <mesh 
-                        position={[0.3, 0.08, 0.02]} 
+                        position={[0.4, 0.1, 0.02]} 
                         onClick={onEnter}
                         onPointerOver={() => {
                             setHovered(true);
@@ -346,7 +346,7 @@ function SplashText3D({ onEnter }) {
                             document.body.style.cursor = 'auto';
                         }}
                     >
-                        <boxGeometry args={[1, 0.4, 0.2]} />
+                        <boxGeometry args={[1.2, 0.5, 0.3]} />
                         <meshBasicMaterial transparent opacity={0} />
                     </mesh>
                 </Center>

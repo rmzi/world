@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Navigation order: Self → Work → Connect
 - Splash screen now fully 3D (removed HTML overlay text)
 - T-pose model hidden after entering the experience
+- Splash layout: T-pose centered in sphere, "rmzi" bottom-left, "enter" below sphere
 
 ## [1.1.0] - 2026-01-27
 

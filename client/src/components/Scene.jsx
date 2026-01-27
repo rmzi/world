@@ -118,18 +118,16 @@ function RotatingHead() {
     };
     
     return (
-        <group 
-            ref={headRef} 
-            position={[0, 0.3, 0]} 
-            scale={8}
-            onPointerDown={handlePointerDown}
-            onPointerOver={() => { document.body.style.cursor = 'grab'; }}
-            onPointerOut={() => { if (!isDragging.current) document.body.style.cursor = 'auto'; }}
-        >
-            {/* Large invisible hitbox for easier interaction */}
-            <mesh position={[0, -1.68, 0]}>
-                <sphereGeometry args={[0.25, 16, 16]} />
-                <meshBasicMaterial transparent opacity={0} />
+        <group ref={headRef} position={[0, 0.3, 0]} scale={8}>
+            {/* Clickable hitbox - visible but nearly transparent */}
+            <mesh 
+                position={[0, -1.68, 0]}
+                onPointerDown={handlePointerDown}
+                onPointerOver={() => { document.body.style.cursor = 'grab'; }}
+                onPointerOut={() => { if (!isDragging.current) document.body.style.cursor = 'auto'; }}
+            >
+                <sphereGeometry args={[0.2, 16, 16]} />
+                <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
             </mesh>
             {/* Center the head (it's positioned at y ~1.7 in original) */}
             <group position={[0, -1.68, 0]}>

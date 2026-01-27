@@ -2,6 +2,13 @@
 
 export const works = [
     {
+        id: 0,
+        title: 'rmzi // warm ambient blend // Steeped in Sound Volume 16',
+        date: '2025-12-06',
+        subtitle: 'DJ set for the tea stand',
+        youtubeId: 'erS1vre2A04',
+    },
+    {
         id: 1,
         title: 'RMZI (bodywerk) @TheLotRadio',
         date: '2025-10-13',

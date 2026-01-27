@@ -293,15 +293,15 @@ export default function Overlay() {
                             animate={{
                                 // Green (low) → Yellow (mid) → Red (hot)
                                 backgroundColor: `rgba(${Math.floor(80 + audioLevel * 175)}, ${Math.floor(180 - audioLevel * 130)}, ${Math.floor(80 - audioLevel * 60)}, ${0.75 + audioLevel * 0.2})`,
-                                boxShadow: `0 4px ${15 + audioLevel * 25}px rgba(${Math.floor(audioLevel * 200)}, ${Math.floor(150 - audioLevel * 100)}, 0, ${0.15 + audioLevel * 0.35})`
+                                boxShadow: `0 4px ${10 + audioLevel * 20}px rgba(${Math.floor(audioLevel * 200)}, ${Math.floor(150 - audioLevel * 100)}, 0, ${0.1 + audioLevel * 0.3})`
                             }}
                             transition={{ duration: 0.03 }}
                             style={{
-                                padding: '8px',
-                                borderRadius: '40px',
+                                padding: '5px',
+                                borderRadius: '30px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '10px',
+                                gap: '6px',
                                 pointerEvents: 'auto',
                             }}
                         >
@@ -310,9 +310,9 @@ export default function Overlay() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={(e) => { e.stopPropagation(); togglePause(); }}
                                 style={{
-                                    fontSize: '0.7rem',
-                                    padding: '10px 24px',
-                                    borderRadius: '30px',
+                                    fontSize: '0.6rem',
+                                    padding: '7px 16px',
+                                    borderRadius: '20px',
                                     border: 'none',
                                     background: isPaused ? '#1a1a1a' : 'rgba(0,0,0,0.06)',
                                     color: isPaused ? 'white' : '#1a1a1a',
@@ -327,49 +327,18 @@ export default function Overlay() {
                             </motion.button>
 
                             <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={(e) => { e.stopPropagation(); toggleSignal(); }}
-                                animate={{
-                                    background: signalActive 
-                                        ? ['rgba(255,100,100,0.8)', 'rgba(255,50,50,0.9)', 'rgba(255,100,100,0.8)']
-                                        : 'rgba(0,0,0,0.06)',
-                                    boxShadow: signalActive 
-                                        ? '0 0 12px rgba(255,50,50,0.5)'
-                                        : '0 0 0px rgba(0,0,0,0)'
-                                }}
-                                transition={{ 
-                                    background: { duration: 1, repeat: signalActive ? Infinity : 0 },
-                                    boxShadow: { duration: 0.3 }
-                                }}
-                                style={{
-                                    fontSize: '0.7rem',
-                                    padding: '10px 16px',
-                                    borderRadius: '30px',
-                                    border: 'none',
-                                    color: signalActive ? 'white' : '#1a1a1a',
-                                    fontWeight: 'bold',
-                                    textTransform: 'uppercase',
-                                    cursor: 'pointer',
-                                    flexShrink: 0
-                                }}
-                            >
-                                📡 {signalActive ? 'On' : 'Signal'}
-                            </motion.button>
-
-                            <motion.button
                                 onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
                                 whileHover={{ scale: 1.1, background: 'rgba(0,0,0,0.1)' }}
                                 style={{
-                                    width: '36px',
-                                    height: '36px',
+                                    width: '28px',
+                                    height: '28px',
                                     borderRadius: '50%',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     background: isExpanded ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.03)',
                                     color: '#1a1a1a',
-                                    fontSize: '1.2rem',
+                                    fontSize: '1rem',
                                     cursor: 'pointer',
                                     border: 'none'
                                 }}
@@ -384,23 +353,22 @@ export default function Overlay() {
                                         animate={{ opacity: 1, width: 'auto' }}
                                         exit={{ opacity: 0, width: 0 }}
                                         transition={{ duration: 0.5, ease: premiumEasing }}
-                                        style={{ display: 'flex', gap: '8px', alignItems: 'center', overflow: 'hidden' }}
+                                        style={{ display: 'flex', gap: '5px', alignItems: 'center', overflow: 'hidden' }}
                                     >
-                                        <div style={{ height: '20px', width: '1px', background: 'rgba(0,0,0,0.1)', margin: '0 6px' }} />
-
                                         <motion.button
                                             whileHover={{ scale: 1.05, background: 'rgba(0,0,0,0.1)' }}
                                             onClick={(e) => { e.stopPropagation(); scatter(); }}
                                             style={{
-                                                fontSize: '0.6rem',
-                                                padding: '10px 16px',
-                                                borderRadius: '30px',
+                                                fontSize: '0.55rem',
+                                                padding: '7px 12px',
+                                                borderRadius: '20px',
                                                 color: '#1a1a1a',
                                                 fontWeight: '600',
                                                 textTransform: 'uppercase',
                                                 whiteSpace: 'nowrap',
                                                 cursor: 'pointer',
-                                                background: 'rgba(0,0,0,0.03)'
+                                                background: 'rgba(0,0,0,0.03)',
+                                                border: 'none'
                                             }}
                                         >
                                             Scatter
@@ -410,18 +378,50 @@ export default function Overlay() {
                                             whileHover={{ scale: 1.05, background: 'rgba(0,0,0,0.1)' }}
                                             onClick={(e) => { e.stopPropagation(); randomizeParams(); }}
                                             style={{
-                                                fontSize: '0.6rem',
-                                                padding: '10px 16px',
-                                                borderRadius: '30px',
+                                                fontSize: '0.55rem',
+                                                padding: '7px 12px',
+                                                borderRadius: '20px',
                                                 color: '#1a1a1a',
                                                 fontWeight: '600',
                                                 textTransform: 'uppercase',
                                                 whiteSpace: 'nowrap',
                                                 cursor: 'pointer',
-                                                background: 'rgba(0,0,0,0.03)'
+                                                background: 'rgba(0,0,0,0.03)',
+                                                border: 'none'
                                             }}
                                         >
                                             Shuffle
+                                        </motion.button>
+
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={(e) => { e.stopPropagation(); toggleSignal(); }}
+                                            animate={{
+                                                background: signalActive 
+                                                    ? ['rgba(255,100,100,0.8)', 'rgba(255,50,50,0.9)', 'rgba(255,100,100,0.8)']
+                                                    : 'rgba(0,0,0,0.03)',
+                                                boxShadow: signalActive 
+                                                    ? '0 0 8px rgba(255,50,50,0.5)'
+                                                    : '0 0 0px rgba(0,0,0,0)'
+                                            }}
+                                            transition={{ 
+                                                background: { duration: 1, repeat: signalActive ? Infinity : 0 },
+                                                boxShadow: { duration: 0.3 }
+                                            }}
+                                            style={{
+                                                fontSize: '0.55rem',
+                                                padding: '7px 12px',
+                                                borderRadius: '20px',
+                                                border: 'none',
+                                                color: signalActive ? 'white' : '#1a1a1a',
+                                                fontWeight: '600',
+                                                textTransform: 'uppercase',
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            📡 Signal
                                         </motion.button>
                                     </motion.div>
                                 )}

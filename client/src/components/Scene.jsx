@@ -172,7 +172,7 @@ function GhostBody({ visible }) {
                 <meshBasicMaterial transparent opacity={0} />
             </mesh>
             {/* Offset model so navel/center aligns with sphere center (origin) */}
-            <group position={[0, -0.85, 0]}>
+            <group position={[0, -1.05, 0]}>
                 <primitive object={wireframeScene} />
             </group>
         </group>

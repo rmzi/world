@@ -1,28 +1,21 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import axios from 'axios';
-
-// API URL - in prod use env
-const API_URL = 'http://localhost:3000/works';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { works } from '../data';
+import { useStore } from '../store';
 
 export default function Work() {
-    const [works, setWorks] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
+    const { setEmbedOpen } = useStore();
 
+    const toggleItem = (id) => {
+        setExpandedId(expandedId === id ? null : id);
+    };
+
+    // Notify store when embed is open/closed (to mute drone)
     useEffect(() => {
-        axios.get(API_URL)
-            .then(res => {
-                setWorks(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to fetch works", err);
-                setLoading(false);
-            });
-    }, []);
-
-    if (loading) return <div className="p-10 text-center">Loading...</div>;
+        setEmbedOpen(expandedId !== null);
+        return () => setEmbedOpen(false); // Cleanup when leaving page
+    }, [expandedId, setEmbedOpen]);
 
     return (
         <div style={{
@@ -31,53 +24,141 @@ export default function Work() {
             left: 0,
             width: '100%',
             height: '100%',
-            padding: '80px 40px',
-            overflowY: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             zIndex: 10,
             pointerEvents: 'auto',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '2rem'
+            padding: '80px 20px 40px',
         }}>
-            {works.map((work, index) => (
-                <motion.div
-                    key={work.id}
-                    layoutId={`card-${work.id}`}
-                    onClick={() => setExpandedId(expandedId === work.id ? null : work.id)}
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="glass"
-                    style={{
-                        padding: '2rem',
-                        borderRadius: '16px',
-                        cursor: 'pointer',
-                        height: expandedId === work.id ? 'auto' : '200px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: expandedId === work.id ? 'flex-start' : 'center'
-                    }}
-                >
-                    <motion.h2 layoutId={`title-${work.id}`} style={{ fontSize: '1.5rem', margin: 0 }}>
-                        {work.title}
-                    </motion.h2>
-                    <motion.p layoutId={`date-${work.id}`} style={{ opacity: 0.6, fontSize: '0.9rem' }}>
-                        {work.date}
-                    </motion.p>
-
-                    {expandedId === work.id && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            style={{ marginTop: '1rem' }}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="glass"
+                style={{
+                    width: '100%',
+                    maxWidth: '700px',
+                    maxHeight: 'calc(100vh - 140px)',
+                    overflowY: 'auto',
+                    borderRadius: '16px',
+                    padding: '8px',
+                }}
+            >
+                {works.map((work, index) => (
+                    <motion.div
+                        key={work.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        style={{
+                            borderBottom: index < works.length - 1 
+                                ? '1px solid rgba(0,0,0,0.08)' 
+                                : 'none',
+                        }}
+                    >
+                        {/* Accordion Header */}
+                        <motion.button
+                            onClick={() => toggleItem(work.id)}
+                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                            style={{
+                                width: '100%',
+                                padding: '16px 20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#1a1a1a',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                borderRadius: '8px',
+                            }}
                         >
-                            <h3 style={{ fontWeight: 400 }}>{work.subtitle}</h3>
-                            <p style={{ lineHeight: 1.6 }}>{work.content}</p>
-                            {work.image && <img src={work.image} alt={work.title} style={{ width: '100%', borderRadius: '8px', marginTop: '1rem' }} />}
-                        </motion.div>
-                    )}
-                </motion.div>
-            ))}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <h3 style={{ 
+                                    margin: 0, 
+                                    fontSize: '1rem',
+                                    fontWeight: '500',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}>
+                                    {work.title}
+                                </h3>
+                                <span style={{ 
+                                    fontSize: '0.75rem', 
+                                    opacity: 0.5,
+                                }}>
+                                    {work.date}
+                                </span>
+                            </div>
+                            
+                            <motion.span
+                                animate={{ rotate: expandedId === work.id ? 180 : 0 }}
+                                transition={{ duration: 0.2 }}
+                                style={{ 
+                                    fontSize: '1.2rem',
+                                    opacity: 0.5,
+                                    marginLeft: '12px',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                ▼
+                            </motion.span>
+                        </motion.button>
+
+                        {/* Accordion Content */}
+                        <AnimatePresence>
+                            {expandedId === work.id && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                                    style={{ overflow: 'hidden' }}
+                                >
+                                    <div style={{ padding: '0 20px 20px' }}>
+                                        <p style={{ 
+                                            fontSize: '0.85rem', 
+                                            opacity: 0.6, 
+                                            margin: '0 0 16px',
+                                            lineHeight: 1.5
+                                        }}>
+                                            {work.subtitle}
+                                        </p>
+                                        
+                                        {work.youtubeId && (
+                                            <div style={{
+                                                position: 'relative',
+                                                paddingBottom: '56.25%',
+                                                height: 0,
+                                                overflow: 'hidden',
+                                                borderRadius: '8px',
+                                                background: 'rgba(0,0,0,0.3)',
+                                            }}>
+                                                <iframe
+                                                    src={`https://www.youtube.com/embed/${work.youtubeId}`}
+                                                    title={work.title}
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                                                    allowFullScreen
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: 0,
+                                                        left: 0,
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        border: 'none',
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                ))}
+            </motion.div>
         </div>
     );
 }

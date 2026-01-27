@@ -1,51 +1,23 @@
-# rmzi.world - Personal Portfolio
+# rmzi.world
 
-An immersive personal website built with React, Three.js, and React-Admin.
-
-![Point Cloud Sphere](/Users/rmzi/.gemini/antigravity/brain/e0655717-d681-4c36-b79e-b8d487c47ddf/frontend_verification_1769435782525.webp)
+A personal portfolio site with an interactive 3D point cloud sphere.
 
 ## ✨ Features
 
-- **Interactive 3D Landing**: A point cloud sphere that deforms under mouse interaction
-- **Spatial Audio**: Gentle sine wave panning left-to-right
-- **Dynamic Content**: Work portfolio with expandable cards
-- **Self Page**: Bio with revolving point cloud
+- **Interactive 3D Landing**: Point cloud sphere that deforms under mouse interaction
+- **Spatial Audio**: Gentle sine wave drone with stereo panning
+- **Work Portfolio**: Expandable project cards
+- **Self Page**: Bio section
 - **Contact Modal**: Glassmorphism-styled contact form
-- **Admin Panel**: React-Admin for content management
 
 ## 🚀 Quick Start
 
 ```bash
-# 1. Install dependencies
-cd server && npm install
-cd ../admin && npm install
-cd ../client && npm install
+# Install dependencies
+make install
 
-# 2. Start the backend
-cd server && npm start
-
-# 3. Start the client (new terminal)
-cd client && npm run dev
-
-# 4. (Optional) Start admin panel (new terminal)
-cd admin && npm run dev
-```
-
-| Service | URL |
-|---------|-----|
-| Client | http://localhost:5173 |
-| Admin | http://localhost:5174 |
-| API | http://localhost:3000 |
-
-## 📁 Project Structure
-
-```
-rmzi.world/
-├── client/          # React + Three.js frontend
-├── admin/           # React-Admin panel
-├── server/          # Node.js Express API
-├── infrastructure/  # Terraform (AWS S3/ECS)
-└── CHANGELOG.md
+# Start dev server (http://localhost:5173)
+make dev
 ```
 
 ## 🛠️ Tech Stack
@@ -53,21 +25,45 @@ rmzi.world/
 | Layer | Technology |
 |-------|------------|
 | Frontend | React, Three.js (R3F), Framer Motion, Zustand |
-| Admin | React-Admin |
-| Backend | Node.js, Express |
-| Infrastructure | Terraform (AWS S3, ECS Fargate) |
+| Hosting | AWS S3 + CloudFront |
+| Domain | Route53 (rmzi.world) |
+| IaC | Terraform |
 
 ## ☁️ Deployment
 
+### First-time infrastructure setup
+
 ```bash
-cd infrastructure
-terraform init
-terraform plan
-terraform apply
+# Ensure AWS credentials are configured for 'personal' profile
+make deploy-infra
 ```
 
-> [!NOTE]
-> Ensure AWS credentials are configured before running Terraform.
+This creates:
+- S3 bucket for static hosting
+- CloudFront distribution with HTTPS
+- ACM certificate for rmzi.world
+- Route53 DNS records
+
+### Deploy updates
+
+```bash
+make deploy
+```
+
+This builds the client and syncs to S3, then invalidates the CloudFront cache.
+
+## 📁 Project Structure
+
+```
+rmzi.world/
+├── client/          # React + Three.js frontend
+│   └── src/
+│       ├── components/  # 3D scene, overlays, audio
+│       ├── pages/       # Work, Self views
+│       └── data.js      # Static content
+├── infrastructure/  # Terraform (S3, CloudFront, Route53)
+└── Makefile         # Build & deploy commands
+```
 
 ## 📝 License
 

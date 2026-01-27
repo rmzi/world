@@ -1,19 +1,26 @@
 :root {
   --font-main: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --bg-color: #050505;
-  --text-color: #ffffff;
+  --bg-color: #fafafa;
+  --text-color: #1a1a1a;
   --accent: #ff4081;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.08);
 }
 
+html,
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+}
+
+body {
   font-family: var(--font-main);
   background-color: var(--bg-color);
   color: var(--text-color);
-  overflow: hidden; /* Prevent scroll on body, handle in specific views */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -25,16 +32,48 @@ button {
   font-family: inherit;
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism utility - adapted for light background */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Leva control panel positioning */
+.leva-c-kWgxhW {
+  top: 60px !important;
+  right: 16px !important;
+}
+
+/* Settings button hover effect */
+.settings-btn:hover {
+  transform: scale(1.05);
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Touch hint animation */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+.touch-hint {
+  animation: pulse-ring 3s ease-in-out infinite;
 }

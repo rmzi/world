@@ -195,7 +195,7 @@ function SelfModels() {
 }
 
 // Animated individual letter for splash screen
-function AnimatedLetter({ letter, index, xOffset }) {
+function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
     const letterRef = useRef();
     const materialRef = useRef();
     
@@ -237,12 +237,12 @@ function AnimatedLetter({ letter, index, xOffset }) {
         <group ref={letterRef} position={[xOffset, 0, 0]}>
             <Text3D
                 font="/helvetiker_regular.typeface.json"
-                size={0.6}
-                height={0.08}
+                size={size}
+                height={size * 0.13}
                 curveSegments={quality.textCurveSegments}
                 bevelEnabled
-                bevelThickness={0.01}
-                bevelSize={0.01}
+                bevelThickness={size * 0.017}
+                bevelSize={size * 0.017}
                 bevelSegments={quality.textBevelSegments}
             >
                 {letter}
@@ -272,6 +272,12 @@ function SplashText3D({ onEnter }) {
         });
         return positions;
     }, []);
+    
+    // Responsive positioning for mobile
+    const textSize = isMobile ? 0.4 : 0.6;
+    const rmziPosition = isMobile ? [-1.0, -2.0, 6] : [-2.5, -1.5, 5];
+    const enterPosition = isMobile ? [0, -2.5, 6] : [0, -1.5, 5];
+    const enterSize = isMobile ? 0.2 : 0.25;
     
     // Show enter after a short delay
     useMemo(() => {
@@ -309,30 +315,31 @@ function SplashText3D({ onEnter }) {
             <directionalLight position={[3, 3, 5]} intensity={0.6} />
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
-            {/* Animated letters "rmzi" - bottom left corner */}
-            <group position={[-2.5, -1.5, 5]}>
+            {/* Animated letters "rmzi" - responsive position */}
+            <group position={rmziPosition}>
                 {letters.map((letter, i) => (
                     <AnimatedLetter 
                         key={i} 
                         letter={letter} 
                         index={i} 
-                        xOffset={letterPositions[i]} 
+                        xOffset={letterPositions[i] * (textSize / 0.6)} 
+                        size={textSize}
                     />
                 ))}
             </group>
             
-            {/* "enter" button - below the sphere */}
+            {/* "enter" button - responsive position */}
             {showEnter && (
-                <Center position={[0, -1.5, 5]}>
+                <Center position={enterPosition}>
                     <Text3D
                         ref={enterRef}
                         font="/helvetiker_regular.typeface.json"
-                        size={0.25}
-                        height={0.04}
+                        size={enterSize}
+                        height={enterSize * 0.16}
                         curveSegments={8}
                         bevelEnabled
-                        bevelThickness={0.006}
-                        bevelSize={0.006}
+                        bevelThickness={enterSize * 0.024}
+                        bevelSize={enterSize * 0.024}
                         bevelSegments={2}
                         material={enterMaterial}
                         onClick={onEnter}
@@ -349,7 +356,7 @@ function SplashText3D({ onEnter }) {
                     </Text3D>
                     {/* Invisible hitbox for easier clicking */}
                     <mesh 
-                        position={[0.4, 0.1, 0.02]} 
+                        position={[enterSize * 1.6, enterSize * 0.4, 0.02]} 
                         onClick={onEnter}
                         onPointerOver={() => {
                             setHovered(true);
@@ -360,7 +367,7 @@ function SplashText3D({ onEnter }) {
                             document.body.style.cursor = 'auto';
                         }}
                     >
-                        <boxGeometry args={[1.2, 0.5, 0.3]} />
+                        <boxGeometry args={[enterSize * 4.8, enterSize * 2, 0.3]} />
                         <meshBasicMaterial transparent opacity={0} />
                     </mesh>
                 </Center>

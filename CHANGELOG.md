@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - 3D text for splash screen ("rmzi" and "enter" button) using Text3D from drei
+- Per-letter animation for "rmzi" (individual floating/bobbing like original HTML)
 - Interactive T-pose body model on landing page (drag to spin)
 - Rotating head model on Self page
 - Extracted head.glb from full body model

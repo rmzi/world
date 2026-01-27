@@ -180,6 +180,64 @@ function SelfModels() {
     );
 }
 
+// Animated individual letter for splash screen
+function AnimatedLetter({ letter, index, xOffset }) {
+    const letterRef = useRef();
+    const materialRef = useRef();
+    
+    // Random animation speeds per letter (like the original HTML version)
+    const speeds = useMemo(() => ({
+        y: 2 + Math.random(),
+        x: 1.5 + Math.random(),
+        z: 2.5 + Math.random(),
+    }), []);
+    
+    // Fade in delay per letter
+    const [opacity, setOpacity] = useState(0);
+    useMemo(() => {
+        setTimeout(() => setOpacity(0.9), index * 80);
+    }, [index]);
+    
+    useFrame((state) => {
+        if (letterRef.current) {
+            const t = state.clock.elapsedTime;
+            // Animate y: [0, -0.03, 0.03, 0] and x: [0, 0.015, -0.015, 0]
+            letterRef.current.position.y = Math.sin(t / speeds.y * Math.PI * 2) * 0.03;
+            letterRef.current.position.x = xOffset + Math.sin(t / speeds.x * Math.PI * 2) * 0.015;
+            letterRef.current.position.z = Math.sin(t / speeds.z * Math.PI * 2) * 0.01;
+        }
+        if (materialRef.current) {
+            materialRef.current.opacity = opacity;
+        }
+    });
+    
+    const material = useMemo(() => new THREE.MeshStandardMaterial({
+        color: '#1a1a1a',
+        metalness: 0.1,
+        roughness: 0.8,
+        transparent: true,
+        opacity: 0,
+    }), []);
+    
+    return (
+        <group ref={letterRef} position={[xOffset, 0, 0]}>
+            <Text3D
+                font="/helvetiker_regular.typeface.json"
+                size={0.6}
+                height={0.08}
+                curveSegments={12}
+                bevelEnabled
+                bevelThickness={0.01}
+                bevelSize={0.01}
+                bevelSegments={3}
+            >
+                {letter}
+                <primitive object={material} ref={materialRef} attach="material" />
+            </Text3D>
+        </group>
+    );
+}
+
 // 3D text for the splash screen
 function SplashText3D({ onEnter }) {
     const groupRef = useRef();
@@ -188,16 +246,28 @@ function SplashText3D({ onEnter }) {
     const [showEnter, setShowEnter] = useState(false);
     const enterOpacity = useRef(0);
     
+    // Letter positions (approximate widths for helvetiker)
+    const letters = ['r', 'm', 'z', 'i'];
+    const letterWidths = [0.35, 0.55, 0.4, 0.2]; // approximate widths
+    const letterPositions = useMemo(() => {
+        const positions = [];
+        let currentX = -0.65; // start offset to center
+        letters.forEach((_, i) => {
+            positions.push(currentX);
+            currentX += letterWidths[i] + 0.05; // width + spacing
+        });
+        return positions;
+    }, []);
+    
     // Show enter after a short delay
     useMemo(() => {
         setTimeout(() => setShowEnter(true), 1500);
     }, []);
     
-    useFrame((state, delta) => {
+    useFrame((state) => {
         if (groupRef.current) {
-            // Subtle floating animation
-            groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
-            groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.02;
+            // Very subtle overall rotation
+            groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.015;
         }
         
         // Animate enter opacity
@@ -209,14 +279,6 @@ function SplashText3D({ onEnter }) {
             }
         }
     });
-    
-    const textMaterial = useMemo(() => new THREE.MeshStandardMaterial({
-        color: '#1a1a1a',
-        metalness: 0.1,
-        roughness: 0.8,
-        transparent: true,
-        opacity: 0.9,
-    }), []);
     
     const enterMaterial = useMemo(() => new THREE.MeshStandardMaterial({
         color: '#1a1a1a',
@@ -233,22 +295,17 @@ function SplashText3D({ onEnter }) {
             <directionalLight position={[3, 3, 5]} intensity={0.6} />
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
-            {/* Main "rmzi" text */}
-            <Center position={[0, 0, 0]}>
-                <Text3D
-                    font="/helvetiker_regular.typeface.json"
-                    size={0.6}
-                    height={0.08}
-                    curveSegments={12}
-                    bevelEnabled
-                    bevelThickness={0.01}
-                    bevelSize={0.01}
-                    bevelSegments={3}
-                    material={textMaterial}
-                >
-                    rmzi
-                </Text3D>
-            </Center>
+            {/* Animated letters "rmzi" */}
+            <group position={[0, 0, 0]}>
+                {letters.map((letter, i) => (
+                    <AnimatedLetter 
+                        key={i} 
+                        letter={letter} 
+                        index={i} 
+                        xOffset={letterPositions[i]} 
+                    />
+                ))}
+            </group>
             
             {/* "enter" button */}
             {showEnter && (

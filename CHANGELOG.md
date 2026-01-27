@@ -24,6 +24,11 @@ All notable changes to this project will be documented in this file.
 - Mobile: Lower DPR to [1, 1] instead of [1, 1.5]
 - Mobile: Reduce Voronoi background opacity
 
+### Tests
+- Updated tests for new liminal color palette
+- Added tests for signal toggle, embed state, audio level, enter, and scene state
+- 20 tests total, all passing
+
 ## [1.1.0] - 2026-01-27
 
 ### Added

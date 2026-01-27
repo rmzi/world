@@ -12,6 +12,9 @@ describe('store', () => {
             volume: 0.1,
             sceneState: 'sphere',
             scatterCount: 0,
+            signalActive: false,
+            isEmbedOpen: false,
+            audioLevel: 0,
             params: { ...DEFAULT_PARAMS },
         });
     });
@@ -36,9 +39,9 @@ describe('store', () => {
         it('should have valid default values', () => {
             expect(DEFAULT_PARAMS.deformRadius).toBe(1.0);
             expect(DEFAULT_PARAMS.deformStrength).toBe(1.85);
-            expect(DEFAULT_PARAMS.pointSize).toBe(400);
-            expect(DEFAULT_PARAMS.fillColor).toBe('#ffffff');
-            expect(DEFAULT_PARAMS.strokeColor).toBe('#000000');
+            expect(DEFAULT_PARAMS.pointSize).toBe(180);
+            expect(DEFAULT_PARAMS.fillColor).toBe('#b8b8a8'); // fog gray
+            expect(DEFAULT_PARAMS.strokeColor).toBe('#5a5a50'); // dark olive
         });
     });
 
@@ -70,8 +73,8 @@ describe('store', () => {
                 expect(params.deformStrength).toBeGreaterThanOrEqual(0.2);
                 expect(params.deformStrength).toBeLessThanOrEqual(1.7);
                 
-                expect(params.pointSize).toBeGreaterThanOrEqual(100);
-                expect(params.pointSize).toBeLessThanOrEqual(600);
+                expect(params.pointSize).toBeGreaterThanOrEqual(80);
+                expect(params.pointSize).toBeLessThanOrEqual(280);
                 
                 expect(params.strokeWidth).toBeGreaterThanOrEqual(0.05);
                 expect(params.strokeWidth).toBeLessThanOrEqual(0.3);
@@ -87,19 +90,28 @@ describe('store', () => {
                 expect(params.damping).toBeLessThanOrEqual(0.98);
                 
                 expect(params.repulsionStrength).toBeGreaterThanOrEqual(0.02);
-                expect(params.repulsionStrength).toBeLessThanOrEqual(0.08);
+                expect(params.repulsionStrength).toBeLessThanOrEqual(0.12);
             }
         });
 
-        it('should generate valid hex colors', () => {
+        it('should generate valid hex colors from liminal palette', () => {
+            const liminalFillColors = [
+                '#d4c896', '#98b88c', '#7a9e9e', '#b8b8a8',
+                '#c4b99e', '#a8b8a0', '#9eb8b8', '#b8a8b0',
+            ];
+            const liminalStrokeColors = [
+                '#6b6650', '#5a7052', '#4a6666', '#707068',
+                '#5a5a50', '#606858', '#586868',
+            ];
+            
             for (let i = 0; i < 10; i++) {
                 const params = generateRandomParams();
                 
-                // fillColor should be a valid hex color
-                expect(params.fillColor).toMatch(/^#[0-9a-f]{6}$/i);
+                // fillColor should be from liminal palette
+                expect(liminalFillColors).toContain(params.fillColor);
                 
-                // strokeColor should be either black or white
-                expect(['#000000', '#ffffff']).toContain(params.strokeColor);
+                // strokeColor should be from liminal stroke palette
+                expect(liminalStrokeColors).toContain(params.strokeColor);
             }
         });
 
@@ -213,6 +225,68 @@ describe('store', () => {
             expect(useStore.getState().isPaused).toBe(false);
             togglePause();
             expect(useStore.getState().isPaused).toBe(true);
+        });
+    });
+
+    describe('signal', () => {
+        it('should toggle signal active state', () => {
+            const { toggleSignal } = useStore.getState();
+            
+            expect(useStore.getState().signalActive).toBe(false);
+            toggleSignal();
+            expect(useStore.getState().signalActive).toBe(true);
+            toggleSignal();
+            expect(useStore.getState().signalActive).toBe(false);
+        });
+    });
+
+    describe('embed state', () => {
+        it('should set embed open state', () => {
+            const { setEmbedOpen } = useStore.getState();
+            
+            expect(useStore.getState().isEmbedOpen).toBe(false);
+            setEmbedOpen(true);
+            expect(useStore.getState().isEmbedOpen).toBe(true);
+            setEmbedOpen(false);
+            expect(useStore.getState().isEmbedOpen).toBe(false);
+        });
+    });
+
+    describe('audio level', () => {
+        it('should set audio level for VU meter', () => {
+            const { setAudioLevel } = useStore.getState();
+            
+            expect(useStore.getState().audioLevel).toBe(0);
+            setAudioLevel(0.5);
+            expect(useStore.getState().audioLevel).toBe(0.5);
+            setAudioLevel(1.0);
+            expect(useStore.getState().audioLevel).toBe(1.0);
+        });
+    });
+
+    describe('enter experience', () => {
+        it('should set hasEntered and start audio', () => {
+            const { enter } = useStore.getState();
+            
+            expect(useStore.getState().hasEntered).toBe(false);
+            expect(useStore.getState().isAudioPlaying).toBe(false);
+            
+            enter();
+            
+            expect(useStore.getState().hasEntered).toBe(true);
+            expect(useStore.getState().isAudioPlaying).toBe(true);
+        });
+    });
+
+    describe('scene state', () => {
+        it('should set scene state for transitions', () => {
+            const { setSceneState } = useStore.getState();
+            
+            expect(useStore.getState().sceneState).toBe('sphere');
+            setSceneState('offscreen');
+            expect(useStore.getState().sceneState).toBe('offscreen');
+            setSceneState('self-cloud');
+            expect(useStore.getState().sceneState).toBe('self-cloud');
         });
     });
 });

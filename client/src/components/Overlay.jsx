@@ -8,8 +8,7 @@ import { useState, useEffect } from 'react';
 export default function Overlay() {
     const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal } = useStore();
     const [isExpanded, setIsExpanded] = useState(false);
-    const [showTouchHint, setShowTouchHint] = useState(false);
-    const [idleHint, setIdleHint] = useState(null); // 'drag', 'explore', 'scatter'
+    const [idleHint, setIdleHint] = useState(null); // 'drag to play', 'explore'
     const [lastInteraction, setLastInteraction] = useState(Date.now());
     const [interactionCount, setInteractionCount] = useState(0);
 
@@ -19,7 +18,6 @@ export default function Overlay() {
         setPaused(false);
         setActivePage(page);
         setIsExpanded(false);
-        setShowTouchHint(false);
 
         if (page === 'work') {
             setSceneState('offscreen');
@@ -55,23 +53,6 @@ export default function Overlay() {
         }
     }, [hasEntered]);
 
-    // Show touch hint after entering, with delay
-    useEffect(() => {
-        if (hasEntered && !activePage && !isPaused) {
-            const timer = setTimeout(() => setShowTouchHint(true), 4000);
-            return () => clearTimeout(timer);
-        } else {
-            setShowTouchHint(false);
-        }
-    }, [hasEntered, activePage, isPaused]);
-
-    // Hide touch hint on any interaction
-    useEffect(() => {
-        const hideHint = () => setShowTouchHint(false);
-        window.addEventListener('pointerdown', hideHint);
-        return () => window.removeEventListener('pointerdown', hideHint);
-    }, []);
-
     // Track interactions and reset idle timer
     useEffect(() => {
         const resetIdle = () => {
@@ -85,134 +66,40 @@ export default function Overlay() {
         return () => events.forEach(e => window.removeEventListener(e, resetIdle));
     }, []);
 
-    // Show contextual hints after 5s idle (but only if user hasn't interacted much)
+    // Show simple idle hint after 4s (but only once per session)
     useEffect(() => {
-        if (!hasEntered || activePage || interactionCount > 10) return;
+        if (!hasEntered || activePage || interactionCount > 3) return;
         
-        const checkIdle = setInterval(() => {
-            const idleTime = Date.now() - lastInteraction;
-            if (idleTime > 5000 && !idleHint) {
-                // Choose hint based on context
-                if (!isPaused && !isExpanded) {
-                    setIdleHint('drag');
-                } else if (isPaused && !isExpanded) {
-                    // Menu is open, no hint needed
-                } else if (isExpanded) {
-                    setIdleHint('scatter');
-                }
+        const timer = setTimeout(() => {
+            if (!idleHint) {
+                setIdleHint('drag to play');
             }
-        }, 1000);
+        }, 4000);
         
-        return () => clearInterval(checkIdle);
-    }, [hasEntered, activePage, isPaused, isExpanded, lastInteraction, idleHint, interactionCount]);
+        return () => clearTimeout(timer);
+    }, [hasEntered, activePage, interactionCount]);
 
     return (
         <div
             onMouseMove={handleMouseMove}
             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         >
-            {/* 1. Splash Screen - now handled by 3D text in Scene.jsx */}
-
-            {/* Touch Hint - subtle pulsing ring */}
+            {/* Idle Hint - simple text that fades in/out once */}
             <AnimatePresence>
-                {showTouchHint && hasEntered && !activePage && !isPaused && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1 }}
-                        style={{
-                            position: 'fixed',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            pointerEvents: 'none',
-                            zIndex: 5,
-                        }}
-                    >
-                        {/* Pulsing rings */}
-                        <motion.div
-                            animate={{
-                                scale: [1, 1.3, 1],
-                                opacity: [0.3, 0, 0.3],
-                            }}
-                            transition={{
-                                duration: 3,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                            }}
-                            style={{
-                                width: '180px',
-                                height: '180px',
-                                borderRadius: '50%',
-                                border: '1px solid rgba(0,0,0,0.15)',
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                        />
-                        <motion.div
-                            animate={{
-                                scale: [1, 1.5, 1],
-                                opacity: [0.2, 0, 0.2],
-                            }}
-                            transition={{
-                                duration: 3,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                delay: 0.5,
-                            }}
-                            style={{
-                                width: '220px',
-                                height: '220px',
-                                borderRadius: '50%',
-                                border: '1px solid rgba(0,0,0,0.1)',
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                        />
-                        {/* Subtle text hint */}
-                        <motion.p
-                            animate={{ opacity: [0.4, 0.7, 0.4] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, 130px)',
-                                fontSize: '0.75rem',
-                                fontWeight: '400',
-                                letterSpacing: '0.15em',
-                                color: 'rgba(0,0,0,0.6)',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            touch to play
-                        </motion.p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Idle Hint - very subtle 1-2 word prompts */}
-            <AnimatePresence>
-                {idleHint && hasEntered && !activePage && (
+                {idleHint && hasEntered && !activePage && !isPaused && (
                     <motion.p
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.35, 0.35, 0] }}
+                        animate={{ opacity: 0.5 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 4, times: [0, 0.15, 0.85, 1] }}
-                        onAnimationComplete={() => setIdleHint(null)}
+                        transition={{ duration: 1.5 }}
                         style={{
                             position: 'fixed',
-                            bottom: idleHint === 'scatter' ? '90px' : '50%',
+                            bottom: '25%',
                             left: '50%',
                             transform: 'translateX(-50%)',
-                            fontSize: '0.65rem',
+                            fontSize: '0.7rem',
                             fontWeight: '300',
-                            letterSpacing: '0.25em',
+                            letterSpacing: '0.2em',
                             color: 'rgba(0,0,0,0.5)',
                             textTransform: 'lowercase',
                             pointerEvents: 'none',

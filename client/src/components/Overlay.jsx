@@ -5,6 +5,15 @@ import Self from '../pages/Self';
 import Connect from '../pages/Connect';
 import { useState, useEffect } from 'react';
 
+// Track UI interactions
+const trackInteraction = (action) => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', action, {
+            event_category: 'engagement',
+        });
+    }
+};
+
 export default function Overlay() {
     const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal } = useStore();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -240,7 +249,7 @@ export default function Overlay() {
                                     >
                                         <motion.button
                                             whileHover={{ scale: 1.05, background: 'rgba(0,0,0,0.1)' }}
-                                            onClick={(e) => { e.stopPropagation(); scatter(); }}
+                                            onClick={(e) => { e.stopPropagation(); scatter(); trackInteraction('scatter'); }}
                                             style={{
                                                 fontSize: '0.55rem',
                                                 padding: '7px 12px',
@@ -259,7 +268,7 @@ export default function Overlay() {
 
                                         <motion.button
                                             whileHover={{ scale: 1.05, background: 'rgba(0,0,0,0.1)' }}
-                                            onClick={(e) => { e.stopPropagation(); randomizeParams(); }}
+                                            onClick={(e) => { e.stopPropagation(); randomizeParams(); trackInteraction('shuffle'); }}
                                             style={{
                                                 fontSize: '0.55rem',
                                                 padding: '7px 12px',
@@ -279,7 +288,7 @@ export default function Overlay() {
                                         <motion.button
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={(e) => { e.stopPropagation(); toggleSignal(); }}
+                                            onClick={(e) => { e.stopPropagation(); toggleSignal(); trackInteraction('signal_toggle'); }}
                                             animate={{
                                                 background: signalActive 
                                                     ? ['rgba(255,100,100,0.8)', 'rgba(255,50,50,0.9)', 'rgba(255,100,100,0.8)']

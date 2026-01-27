@@ -3,12 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { works } from '../data';
 import { useStore } from '../store';
 
+// Track mix/embed opens
+const trackMixOpen = (mixTitle) => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'mix_open', {
+            event_category: 'engagement',
+            event_label: mixTitle,
+        });
+    }
+};
+
 export default function Work() {
     const [expandedId, setExpandedId] = useState(null);
     const { setEmbedOpen } = useStore();
 
-    const toggleItem = (id) => {
-        setExpandedId(expandedId === id ? null : id);
+    const toggleItem = (id, title) => {
+        const isOpening = expandedId !== id;
+        setExpandedId(isOpening ? id : null);
+        if (isOpening) {
+            trackMixOpen(title);
+        }
     };
 
     // Notify store when embed is open/closed (to mute drone)
@@ -61,7 +75,7 @@ export default function Work() {
                     >
                         {/* Accordion Header */}
                         <motion.button
-                            onClick={() => toggleItem(work.id)}
+                            onClick={() => toggleItem(work.id, work.title)}
                             whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
                     style={{
                                 width: '100%',

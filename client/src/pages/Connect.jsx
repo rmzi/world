@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
+// Track contact attempts
+const trackContact = (method) => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'contact_attempt', {
+            event_category: 'conversion',
+            event_label: method,
+        });
+    }
+};
+
 const inputStyle = {
     width: '100%',
     padding: '12px 16px',
@@ -27,6 +37,7 @@ export default function Connect() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        trackContact('form');
         
         const subject = encodeURIComponent(`Hello from ${name || 'a visitor'}`);
         const body = encodeURIComponent(message);
@@ -127,6 +138,7 @@ export default function Connect() {
                     or email directly at{' '}
                     <a 
                         href="mailto:hello@rmzi.world" 
+                        onClick={() => trackContact('direct_link')}
                         style={{ color: '#1a1a1a', textDecoration: 'underline' }}
                     >
                         hello@rmzi.world

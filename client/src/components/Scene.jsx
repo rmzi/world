@@ -1,8 +1,8 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useRef, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF } from '@react-three/drei';
+import { useGLTF, Text3D, Center } from '@react-three/drei';
 import { EffectComposer, ChromaticAberration, Noise } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import PointCloudSphere from './PointCloudSphere';
@@ -61,22 +61,26 @@ function RotatingHead() {
     );
 }
 
-// Ghostly T-pose body in background
-function GhostBody() {
+// Interactive T-pose body on splash screen - drag to spin
+function GhostBody({ visible }) {
     const bodyRef = useRef();
     const { scene } = useGLTF('/body.glb');
+    const isDragging = useRef(false);
+    const previousX = useRef(0);
+    const velocityY = useRef(0);
+    const targetRotationY = useRef(0);
     
     // Clone and create wireframe version
     const wireframeScene = useMemo(() => {
         const clone = scene.clone();
         clone.traverse((child) => {
             if (child.isMesh) {
-                // Create wireframe material
                 child.material = new THREE.MeshBasicMaterial({
-                    color: '#7a9e9e',
+                    color: '#5a7a7a',
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.15,
+                    opacity: 0.3,
+                    depthWrite: false,
                 });
             }
         });
@@ -85,25 +89,74 @@ function GhostBody() {
     
     // Random initial rotation
     const randomRotation = useMemo(() => ({
-        x: (Math.random() - 0.5) * 0.4,
+        x: (Math.random() - 0.5) * 0.1,
         y: Math.random() * Math.PI * 2,
-        z: (Math.random() - 0.5) * 0.3,
+        z: (Math.random() - 0.5) * 0.08,
     }), []);
+    
+    // Initialize target rotation
+    useMemo(() => {
+        targetRotationY.current = randomRotation.y;
+    }, [randomRotation.y]);
     
     useFrame((state, delta) => {
         if (bodyRef.current) {
-            // Very slow rotation
-            bodyRef.current.rotation.y += delta * 0.05;
+            // Apply velocity with friction when not dragging
+            if (!isDragging.current) {
+                velocityY.current *= 0.95; // Friction
+                targetRotationY.current += velocityY.current;
+            }
+            
+            // Smooth interpolation to target rotation
+            bodyRef.current.rotation.y = THREE.MathUtils.lerp(
+                bodyRef.current.rotation.y,
+                targetRotationY.current,
+                0.1
+            );
+            
+            // Gentle floating motion
+            bodyRef.current.position.y = 1.3 + Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
         }
     });
+    
+    const handlePointerDown = (e) => {
+        e.stopPropagation();
+        isDragging.current = true;
+        previousX.current = e.clientX || e.touches?.[0]?.clientX || 0;
+        velocityY.current = 0;
+    };
+    
+    const handlePointerMove = (e) => {
+        if (!isDragging.current) return;
+        const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
+        const deltaX = currentX - previousX.current;
+        velocityY.current = deltaX * 0.01;
+        targetRotationY.current += deltaX * 0.01;
+        previousX.current = currentX;
+    };
+    
+    const handlePointerUp = () => {
+        isDragging.current = false;
+    };
+    
+    if (!visible) return null;
     
     return (
         <group 
             ref={bodyRef} 
-            position={[2.5, -1.5, -4]} 
-            scale={2}
+            position={[0, 1.3, 0]} 
+            scale={2.8}
             rotation={[randomRotation.x, randomRotation.y, randomRotation.z]}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
         >
+            {/* Invisible hitbox for easier interaction */}
+            <mesh visible={false}>
+                <boxGeometry args={[1.2, 2, 0.5]} />
+                <meshBasicMaterial transparent opacity={0} />
+            </mesh>
             {/* Center the body */}
             <group position={[0, -0.9, 0]}>
                 <primitive object={wireframeScene} />
@@ -112,26 +165,146 @@ function GhostBody() {
     );
 }
 
-// Combined Self page 3D elements
+// Self page - just the rotating head
 function SelfModels() {
     return (
         <group>
-            {/* Ambient light for the models */}
+            {/* Ambient light for the head model */}
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 5, 5]} intensity={0.8} />
             <directionalLight position={[-5, 3, -5]} intensity={0.3} />
             
             {/* Main head in center */}
             <RotatingHead />
+        </group>
+    );
+}
+
+// 3D text for the splash screen
+function SplashText3D({ onEnter }) {
+    const groupRef = useRef();
+    const enterRef = useRef();
+    const [hovered, setHovered] = useState(false);
+    const [showEnter, setShowEnter] = useState(false);
+    const enterOpacity = useRef(0);
+    
+    // Show enter after a short delay
+    useMemo(() => {
+        setTimeout(() => setShowEnter(true), 1500);
+    }, []);
+    
+    useFrame((state, delta) => {
+        if (groupRef.current) {
+            // Subtle floating animation
+            groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+            groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.02;
+        }
+        
+        // Animate enter opacity
+        if (showEnter) {
+            const targetOpacity = hovered ? 0.9 : 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.15;
+            enterOpacity.current += (targetOpacity - enterOpacity.current) * 0.1;
+            if (enterRef.current) {
+                enterRef.current.material.opacity = enterOpacity.current;
+            }
+        }
+    });
+    
+    const textMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+        color: '#1a1a1a',
+        metalness: 0.1,
+        roughness: 0.8,
+        transparent: true,
+        opacity: 0.9,
+    }), []);
+    
+    const enterMaterial = useMemo(() => new THREE.MeshStandardMaterial({
+        color: '#1a1a1a',
+        metalness: 0.1,
+        roughness: 0.8,
+        transparent: true,
+        opacity: 0.3,
+    }), []);
+    
+    return (
+        <group ref={groupRef} position={[0, 0.5, 2]}>
+            {/* Lighting for text */}
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[3, 3, 5]} intensity={0.6} />
+            <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
-            {/* Ghost body in background */}
-            <GhostBody />
+            {/* Main "rmzi" text */}
+            <Center position={[0, 0, 0]}>
+                <Text3D
+                    font="/helvetiker_regular.typeface.json"
+                    size={0.6}
+                    height={0.08}
+                    curveSegments={12}
+                    bevelEnabled
+                    bevelThickness={0.01}
+                    bevelSize={0.01}
+                    bevelSegments={3}
+                    material={textMaterial}
+                >
+                    rmzi
+                </Text3D>
+            </Center>
+            
+            {/* "enter" button */}
+            {showEnter && (
+                <Center position={[0, -0.8, 0]}>
+                    <Text3D
+                        ref={enterRef}
+                        font="/helvetiker_regular.typeface.json"
+                        size={0.18}
+                        height={0.03}
+                        curveSegments={8}
+                        bevelEnabled
+                        bevelThickness={0.005}
+                        bevelSize={0.005}
+                        bevelSegments={2}
+                        material={enterMaterial}
+                        onClick={onEnter}
+                        onPointerOver={() => {
+                            setHovered(true);
+                            document.body.style.cursor = 'pointer';
+                        }}
+                        onPointerOut={() => {
+                            setHovered(false);
+                            document.body.style.cursor = 'auto';
+                        }}
+                    >
+                        enter
+                    </Text3D>
+                    {/* Invisible hitbox for easier clicking */}
+                    <mesh 
+                        position={[0.3, 0.08, 0.02]} 
+                        onClick={onEnter}
+                        onPointerOver={() => {
+                            setHovered(true);
+                            document.body.style.cursor = 'pointer';
+                        }}
+                        onPointerOut={() => {
+                            setHovered(false);
+                            document.body.style.cursor = 'auto';
+                        }}
+                    >
+                        <boxGeometry args={[1, 0.4, 0.2]} />
+                        <meshBasicMaterial transparent opacity={0} />
+                    </mesh>
+                </Center>
+            )}
         </group>
     );
 }
 
 export default function Scene() {
-    const { sceneState } = useStore();
+    const { sceneState, hasEntered, setHasEntered, setIsAudioPlaying } = useStore();
+    
+    const handleEnter = () => {
+        setHasEntered(true);
+        setIsAudioPlaying(true);
+    };
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
@@ -144,6 +317,10 @@ export default function Scene() {
                 <Suspense fallback={null}>
                     <VoronoiBackground />
                     <PointCloudSphere visible={true} />
+                    {/* Ghost body on splash screen */}
+                    <GhostBody visible={!hasEntered} />
+                    {/* 3D splash text */}
+                    {!hasEntered && <SplashText3D onEnter={handleEnter} />}
                     {sceneState === 'self-cloud' && <SelfModels />}
                     <PostEffects />
                 </Suspense>

@@ -111,76 +111,7 @@ export default function Overlay() {
             onMouseMove={handleMouseMove}
             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         >
-            {/* 1. Splash Screen */}
-            <AnimatePresence>
-                {!hasEntered && (
-                    <motion.div
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5, ease: 'easeInOut' }}
-                        onClick={enter}
-                        style={{
-                            position: 'fixed',
-                            inset: 0,
-                            background: '#fafafa',
-                            color: '#1a1a1a',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 2000,
-                            pointerEvents: 'auto',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <div style={{ display: 'flex', gap: '0.2em' }}>
-                            {"rmzi".split("").map((letter, i) => (
-                                <motion.h1
-                                    key={i}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{
-                                        opacity: 1,
-                                        y: [0, -2, 2, 0],
-                                        x: [0, 1, -1, 0]
-                                    }}
-                                    transition={{
-                                        opacity: { duration: 0.5, delay: i * 0.08 },
-                                        y: { repeat: Infinity, duration: 2 + Math.random(), ease: "easeInOut" },
-                                        x: { repeat: Infinity, duration: 1.5 + Math.random(), ease: "easeInOut" }
-                                    }}
-                                    style={{ fontSize: '4rem', fontWeight: '300', letterSpacing: '0.1em', textTransform: 'lowercase', margin: 0 }}
-                                >
-                                    {letter}
-                                </motion.h1>
-                            ))}
-                        </div>
-
-                        <AnimatePresence>
-                            {showPrompt && (
-                                <motion.p
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: [0, 0.5, 0] }}
-                                    transition={{
-                                        duration: 3,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: '40%',
-                                        fontSize: '0.8rem',
-                                        fontWeight: '300',
-                                        letterSpacing: '0.3em',
-                                        textTransform: 'lowercase',
-                                    }}
-                                >
-                                    enter
-                                </motion.p>
-                            )}
-                        </AnimatePresence>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* 1. Splash Screen - now handled by 3D text in Scene.jsx */}
 
             {/* Touch Hint - subtle pulsing ring */}
             <AnimatePresence>
@@ -312,7 +243,7 @@ export default function Overlay() {
                                 height: '100%',
                                 gap: '1.2rem'
                             }}>
-                                {['Work', 'Self', 'Connect'].map((item, i) => (
+                                {['Self', 'Work', 'Connect'].map((item, i) => (
                                     <motion.h2
                                         key={item}
                                         initial={{ opacity: 0, y: 15 }}

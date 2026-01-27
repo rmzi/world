@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-01-27
+
+### Added
+- 3D text for splash screen ("rmzi" and "enter" button) using Text3D from drei
+- Interactive T-pose body model on landing page (drag to spin)
+- Rotating head model on Self page
+- Extracted head.glb from full body model
+
+### Changed
+- Navigation order: Self → Work → Connect
+- Splash screen now fully 3D (removed HTML overlay text)
+- T-pose model hidden after entering the experience
+
+## [1.1.0] - 2026-01-27
+
+### Added
+- Algorithmic reverb with long decay (2-4s) for ambient atmosphere
+- Ghost plucks (15% chance) with softer attacks
+- Idle interaction hints ("drag", "explore", "scatter") after 5s inactivity
+- Fluorescent/liminal color palette
+- Soft edges, depth fog, and connecting lines between points
+- Chromatic aberration and film grain post-processing (audio-reactive)
+- Audio-reactive point size and brightness
+- Signal button for continuous wave deformation
+- VU meter visualization in dock (green to red)
+- Voronoi background pattern (animated, 14-cell density)
+- AWS SES email forwarding for hello@rmzi.world
+
+### Changed
+- Enhanced delay with more feedback and longer echoes
+- Pluck envelope tweaks (longer release based on displacement)
+- Drone dynamics with LFOs for volume, panning, and reverb
+- Added subtle noise modulation to drone
+
 ## [1.0.0] - 2026-01-26
 
 ### Added

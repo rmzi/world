@@ -29,7 +29,7 @@ export default function Work() {
             justifyContent: 'center',
             zIndex: 10,
             pointerEvents: 'auto',
-            padding: '60px 16px 100px',
+            padding: '80px 16px 100px',
             overflowX: 'hidden',
             overflowY: 'auto',
             WebkitOverflowScrolling: 'touch',

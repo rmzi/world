@@ -25,11 +25,13 @@ export default function Work() {
             width: '100%',
             height: '100%',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'center',
             zIndex: 10,
             pointerEvents: 'auto',
-            padding: '80px 20px 40px',
+            padding: '60px 16px 100px',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
         }}>
             <motion.div
                 initial={{ opacity: 0 }}
@@ -38,10 +40,9 @@ export default function Work() {
                 style={{
                     width: '100%',
                     maxWidth: '700px',
-                    maxHeight: 'calc(100vh - 140px)',
-                    overflowY: 'auto',
                     borderRadius: '16px',
                     padding: '8px',
+                    margin: '0 auto',
                 }}
             >
                 {works.map((work, index) => (

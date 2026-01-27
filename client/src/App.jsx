@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Scene from './components/Scene';
 import Overlay from './components/Overlay';
 import AudioPlayer from './components/AudioPlayer';
@@ -7,9 +7,31 @@ import { Leva } from 'leva';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
 
+// Google Analytics page view tracking for SPA
+const trackPageView = (pagePath, pageTitle) => {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', 'page_view', {
+      page_path: pagePath,
+      page_title: pageTitle,
+    });
+  }
+};
+
 function App() {
-  const { activePage } = useStore();
+  const { activePage, hasEntered } = useStore();
   const [showControls, setShowControls] = useState(false);
+
+  // Track page views when navigation changes
+  useEffect(() => {
+    if (!hasEntered) {
+      trackPageView('/', 'rmzi - Splash');
+    } else if (activePage === null) {
+      trackPageView('/home', 'rmzi - Home');
+    } else {
+      const title = activePage.charAt(0).toUpperCase() + activePage.slice(1);
+      trackPageView(`/${activePage}`, `rmzi - ${title}`);
+    }
+  }, [activePage, hasEntered]);
 
   return (
     <div className="app-container">

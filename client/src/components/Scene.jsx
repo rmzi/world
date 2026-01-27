@@ -344,9 +344,10 @@ function SplashText3D({ onEnter }) {
                 <group position={enterPosition}>
                     {/* Large invisible hitbox for easy clicking/tapping */}
                     <mesh 
-                        position={[0, 0, 0.1]} 
+                        position={[0, 0, 0.2]} 
                         onClick={(e) => { e.stopPropagation(); onEnter(); }}
                         onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
+                        onPointerUp={(e) => { e.stopPropagation(); onEnter(); }}
                         onPointerOver={() => {
                             setHovered(true);
                             document.body.style.cursor = 'pointer';
@@ -356,10 +357,10 @@ function SplashText3D({ onEnter }) {
                             document.body.style.cursor = 'auto';
                         }}
                     >
-                        <planeGeometry args={[2, 1]} />
-                        <meshBasicMaterial transparent opacity={0} />
+                        <planeGeometry args={[2.5, 1.2]} />
+                        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
                     </mesh>
-                    {/* Visible text */}
+                    {/* Visible text - also clickable */}
                     <Center>
                         <Text3D
                             ref={enterRef}
@@ -372,6 +373,8 @@ function SplashText3D({ onEnter }) {
                             bevelSize={enterSize * 0.024}
                             bevelSegments={2}
                             material={enterMaterial}
+                            onClick={(e) => { e.stopPropagation(); onEnter(); }}
+                            onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
                         >
                             enter
                         </Text3D>
@@ -383,11 +386,10 @@ function SplashText3D({ onEnter }) {
 }
 
 export default function Scene() {
-    const { sceneState, hasEntered, setHasEntered, setIsAudioPlaying } = useStore();
+    const { sceneState, hasEntered, enter } = useStore();
     
     const handleEnter = () => {
-        setHasEntered(true);
-        setIsAudioPlaying(true);
+        enter(); // Sets hasEntered=true and isAudioPlaying=true
     };
 
     return (

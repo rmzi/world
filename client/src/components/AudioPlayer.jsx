@@ -474,7 +474,7 @@ export default function AudioPlayer() {
             if (ctx && isAudioPlaying && nodesRef.current.gain) {
                 ctx.resume().then(() => {
                     nodesRef.current.gain.gain.setTargetAtTime(
-                        volume * 0.2, ctx.currentTime, 0.5
+                        volume * 0.23, ctx.currentTime, 0.5
                     );
                 }).catch(() => {});
             }
@@ -648,7 +648,7 @@ useEffect(() => {
                     const rampTime = 0.3;
                     nodesRef.current.gain.gain.cancelScheduledValues(audioCtxRef.current.currentTime);
                     nodesRef.current.gain.gain.setTargetAtTime(
-                        volume * 0.2, audioCtxRef.current.currentTime, rampTime
+                        volume * 0.23, audioCtxRef.current.currentTime, rampTime
                     );
                 }
             } else {
@@ -674,7 +674,7 @@ useEffect(() => {
         if (nodesRef.current.gain && audioCtxRef.current && !isEmbedOpen && isAudioPlaying) {
             nodesRef.current.gain.gain.cancelScheduledValues(audioCtxRef.current.currentTime);
             nodesRef.current.gain.gain.setTargetAtTime(
-                volume * 0.2, audioCtxRef.current.currentTime, 0.3
+                volume * 0.23, audioCtxRef.current.currentTime, 0.3
             );
         }
     }, [volume, isEmbedOpen, isAudioPlaying]);

@@ -1,6 +1,18 @@
 import { motion } from 'framer-motion';
 import { bio } from '../data';
 
+// Track outbound link clicks
+const trackOutboundClick = (linkName, url) => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'click', {
+            event_category: 'outbound',
+            event_label: linkName,
+            transport_type: 'beacon',
+        });
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+};
+
 // Simple SVG icons for social links
 const icons = {
     Instagram: (
@@ -86,6 +98,10 @@ export default function Self() {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                trackOutboundClick(link.name, link.url);
+                            }}
                             initial={{ opacity: 0, scale: 0.5 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.5 + i * 0.08 }}

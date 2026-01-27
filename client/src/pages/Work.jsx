@@ -47,9 +47,9 @@ export default function Work() {
                     margin: '0 auto',
                 }}
             >
-                {works.map((work, index) => (
-                    <motion.div
-                        key={work.id}
+            {works.map((work, index) => (
+                <motion.div
+                    key={work.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
@@ -63,7 +63,7 @@ export default function Work() {
                         <motion.button
                             onClick={() => toggleItem(work.id)}
                             whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                            style={{
+                    style={{
                                 width: '100%',
                                 padding: '16px 20px',
                                 display: 'flex',
@@ -72,11 +72,11 @@ export default function Work() {
                                 background: 'transparent',
                                 border: 'none',
                                 color: '#1a1a1a',
-                                cursor: 'pointer',
+                        cursor: 'pointer',
                                 textAlign: 'left',
                                 borderRadius: '8px',
-                            }}
-                        >
+                    }}
+                >
                             <div style={{ flex: 1, minWidth: 0 }}>
                                 <h3 style={{ 
                                     margin: 0, 
@@ -86,13 +86,13 @@ export default function Work() {
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                 }}>
-                                    {work.title}
+                        {work.title}
                                 </h3>
                                 <span style={{ 
                                     fontSize: '0.75rem', 
                                     opacity: 0.5,
                                 }}>
-                                    {work.date}
+                        {work.date}
                                 </span>
                             </div>
                             
@@ -112,14 +112,14 @@ export default function Work() {
 
                         {/* Accordion Content */}
                         <AnimatePresence>
-                            {expandedId === work.id && (
-                                <motion.div
+                    {expandedId === work.id && (
+                        <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                                     style={{ overflow: 'hidden' }}
-                                >
+                        >
                                     <div style={{ padding: '0 20px 20px' }}>
                                         <p style={{ 
                                             fontSize: '0.85rem', 
@@ -156,11 +156,11 @@ export default function Work() {
                                             </div>
                                         )}
                                     </div>
-                                </motion.div>
-                            )}
+                        </motion.div>
+                    )}
                         </AnimatePresence>
-                    </motion.div>
-                ))}
+                </motion.div>
+            ))}
             </motion.div>
         </div>
     );

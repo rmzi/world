@@ -101,13 +101,13 @@ export default function Overlay() {
                             fontWeight: '300',
                             letterSpacing: '0.2em',
                             color: 'rgba(0,0,0,0.5)',
-                            textTransform: 'lowercase',
+                                        textTransform: 'lowercase',
                             pointerEvents: 'none',
                             zIndex: 5,
-                        }}
-                    >
+                                    }}
+                                >
                         {idleHint}
-                    </motion.p>
+                                </motion.p>
                 )}
             </AnimatePresence>
 

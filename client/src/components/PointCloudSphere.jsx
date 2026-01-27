@@ -41,7 +41,7 @@ const PointCloudMaterial = shaderMaterial(
   void main() {
     vec3 pos = position;
     vec3 dir = normalize(pos);
-    
+
     // Explode / Offscreen
     pos += dir * uExplode * 10.0;
 
@@ -334,7 +334,7 @@ export default function PointCloudSphere({ visible = true }) {
             opacities[i * 2] = 1.0;
             opacities[i * 2 + 1] = 0.0; // Fade toward center
         }
-        
+
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geo.setAttribute('lineOpacity', new THREE.BufferAttribute(opacities, 1));
@@ -399,7 +399,7 @@ export default function PointCloudSphere({ visible = true }) {
     // Physics State
     const physics = useMemo(() => ({
         velocities: new Float32Array(NUM_POINTS * 3),
-        currentPositions: new Float32Array(geometry.attributes.position.array),
+            currentPositions: new Float32Array(geometry.attributes.position.array),
         targetPositions: new Float32Array(targetPositions),
         // Wave deformation state for scatter
         waveOrigins: [], // { origin: vec3, time: number, strength: number, pattern: string }
@@ -712,7 +712,7 @@ export default function PointCloudSphere({ visible = true }) {
                 }
             }
             posAttr.needsUpdate = true;
-            
+
             // Mark displacement attribute for update
             if (geometry.attributes.displacement) {
                 geometry.attributes.displacement.needsUpdate = true;
@@ -829,7 +829,7 @@ export default function PointCloudSphere({ visible = true }) {
             }
             if (webLinesRef.current) {
                 webLinesRef.current.rotation.y = meshRef.current.rotation.y;
-            }
+        }
         }
     });
 

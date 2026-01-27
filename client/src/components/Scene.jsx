@@ -169,7 +169,7 @@ function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
     useMemo(() => {
         setTimeout(() => setOpacity(0.9), index * 80);
     }, [index]);
-    
+
     useFrame((state) => {
         if (letterRef.current) {
             const t = state.clock.elapsedTime;
@@ -260,7 +260,7 @@ function SplashText3D({ onEnter }) {
         transparent: true,
         opacity: 0.3,
     }), []);
-    
+
     return (
         <group ref={groupRef}>
             {/* Lighting for text */}
@@ -270,7 +270,7 @@ function SplashText3D({ onEnter }) {
             
             {/* Animated letters "rmzi" - centered */}
             <Center position={rmziPosition}>
-                <group>
+        <group>
                     {letters.map((letter, i) => (
                         <AnimatedLetter 
                             key={i} 
@@ -303,7 +303,7 @@ function SplashText3D({ onEnter }) {
                     >
                         <planeGeometry args={[2.5, 1.2]} />
                         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-                    </mesh>
+            </mesh>
                     {/* Visible text - also clickable */}
                     <Center>
                         <Text3D

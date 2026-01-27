@@ -76,12 +76,12 @@ export default function AudioPlayer() {
             // === DRONE OSCILLATORS (softer, breathier) ===
             const baseFreq = 55; // A1
             const oscs = [0, 0.3, 0.7].map((detune, i) => {
-                const osc = ctx.createOscillator();
+                    const osc = ctx.createOscillator();
                 osc.type = 'sine'; // All sine for softer tone
                 osc.frequency.setValueAtTime(baseFreq + detune, ctx.currentTime);
-                osc.start();
-                return osc;
-            });
+                    osc.start();
+                    return osc;
+                });
 
             // Sub oscillator (one octave down) - very subtle
             const subOsc = ctx.createOscillator();
@@ -121,7 +121,7 @@ export default function AudioPlayer() {
             filter.Q.setValueAtTime(0.5, ctx.currentTime); // Less resonance
 
             // === PANNER ===
-            const panner = ctx.createStereoPanner();
+                const panner = ctx.createStereoPanner();
             panLfoGain.connect(panner.pan); // Slow pan movement
 
             // === REVERB LFO (modulates delay/reverb character) ===
@@ -651,7 +651,7 @@ useEffect(() => {
                         volume * 0.23, audioCtxRef.current.currentTime, rampTime
                     );
                 }
-            } else {
+        } else {
                 // Mute quickly when embed opens
                 nodesRef.current.gain.gain.cancelScheduledValues(audioCtxRef.current.currentTime);
                 nodesRef.current.gain.gain.setTargetAtTime(0, audioCtxRef.current.currentTime, 0.15);
@@ -676,7 +676,7 @@ useEffect(() => {
             nodesRef.current.gain.gain.setTargetAtTime(
                 volume * 0.23, audioCtxRef.current.currentTime, 0.3
             );
-        }
+    }
     }, [volume, isEmbedOpen, isAudioPlaying]);
 
     // Audio level monitoring for visualization
@@ -701,7 +701,7 @@ useEffect(() => {
             }
             
             analyser.getByteFrequencyData(dataArray);
-            
+
             // Calculate RMS level from frequency data
             let sum = 0;
             for (let i = 0; i < dataArray.length; i++) {

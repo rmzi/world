@@ -257,7 +257,7 @@ function SplashText3D({ onEnter }) {
     const groupRef = useRef();
     const enterRef = useRef();
     const [hovered, setHovered] = useState(false);
-    const [showEnter, setShowEnter] = useState(false);
+    const showEnter = true; // Always show enter immediately
     const enterOpacity = useRef(0);
     
     // Letter positions (approximate widths for helvetiker)
@@ -278,11 +278,6 @@ function SplashText3D({ onEnter }) {
     const rmziPosition = isMobile ? [0, -2.2, 6] : [-2.5, -1.5, 5];
     const enterPosition = isMobile ? [0, -2.8, 6] : [0, -1.5, 5];
     const enterSize = isMobile ? 0.18 : 0.25;
-    
-    // Show enter after a short delay
-    useMemo(() => {
-        setTimeout(() => setShowEnter(true), 1500);
-    }, []);
     
     useFrame((state) => {
         if (groupRef.current) {

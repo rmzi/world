@@ -75,110 +75,6 @@ function RotatingHead() {
     );
 }
 
-// Interactive T-pose body on splash screen - drag to spin
-function GhostBody({ visible }) {
-    const bodyRef = useRef();
-    const { scene } = useGLTF('/body.glb');
-    const isDragging = useRef(false);
-    const previousX = useRef(0);
-    const velocityY = useRef(0);
-    const targetRotationY = useRef(0);
-    
-    // Clone and create wireframe version
-    const wireframeScene = useMemo(() => {
-        const clone = scene.clone();
-        clone.traverse((child) => {
-            if (child.isMesh) {
-                child.material = new THREE.MeshBasicMaterial({
-                    color: '#5a7a7a',
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.3,
-                    depthWrite: false,
-                });
-            }
-        });
-        return clone;
-    }, [scene]);
-    
-    // Random initial rotation
-    const randomRotation = useMemo(() => ({
-        x: (Math.random() - 0.5) * 0.1,
-        y: Math.random() * Math.PI * 2,
-        z: (Math.random() - 0.5) * 0.08,
-    }), []);
-    
-    // Initialize target rotation
-    useMemo(() => {
-        targetRotationY.current = randomRotation.y;
-    }, [randomRotation.y]);
-    
-    useFrame((state, delta) => {
-        if (bodyRef.current) {
-            // Apply velocity with friction when not dragging
-            if (!isDragging.current) {
-                velocityY.current *= 0.95; // Friction
-                targetRotationY.current += velocityY.current;
-            }
-            
-            // Smooth interpolation to target rotation
-            bodyRef.current.rotation.y = THREE.MathUtils.lerp(
-                bodyRef.current.rotation.y,
-                targetRotationY.current,
-                0.1
-            );
-            
-            // Gentle floating motion centered in sphere (subtle bob only)
-            bodyRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
-        }
-    });
-    
-    const handlePointerDown = (e) => {
-        e.stopPropagation();
-        isDragging.current = true;
-        previousX.current = e.clientX || e.touches?.[0]?.clientX || 0;
-        velocityY.current = 0;
-    };
-    
-    const handlePointerMove = (e) => {
-        if (!isDragging.current) return;
-        const currentX = e.clientX || e.touches?.[0]?.clientX || 0;
-        const deltaX = currentX - previousX.current;
-        velocityY.current = deltaX * 0.01;
-        targetRotationY.current += deltaX * 0.01;
-        previousX.current = currentX;
-    };
-    
-    const handlePointerUp = () => {
-        isDragging.current = false;
-    };
-    
-    if (!visible) return null;
-    
-    return (
-        <group 
-            ref={bodyRef} 
-            position={[0, 0, 0]} 
-            scale={2.0}
-            rotation={[randomRotation.x, randomRotation.y, randomRotation.z]}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerUp}
-        >
-            {/* Invisible hitbox for easier interaction */}
-            <mesh visible={false}>
-                <boxGeometry args={[1.2, 2, 0.5]} />
-                <meshBasicMaterial transparent opacity={0} />
-            </mesh>
-            {/* Offset model so navel/center aligns with sphere center (origin) */}
-            <group position={[0, -1.05, 0]}>
-                <primitive object={wireframeScene} />
-            </group>
-        </group>
-    );
-}
-
 // Self page - just the rotating head
 function SelfModels() {
     return (
@@ -274,10 +170,10 @@ function SplashText3D({ onEnter }) {
     }, []);
     
     // Responsive positioning for mobile - centered under sphere
-    const textSize = isMobile ? 0.35 : 0.6;
-    const rmziPosition = isMobile ? [0, -2.2, 6] : [-2.5, -1.5, 5];
-    const enterPosition = isMobile ? [0, -2.8, 6] : [0, -1.5, 5];
-    const enterSize = isMobile ? 0.18 : 0.25;
+    const textSize = isMobile ? 0.5 : 0.6;
+    const rmziPosition = isMobile ? [0, -2.5, 2] : [-2.5, -1.5, 5];
+    const enterPosition = isMobile ? [0, -3.2, 2] : [0, -1.5, 5];
+    const enterSize = isMobile ? 0.22 : 0.25;
     
     useFrame((state) => {
         if (groupRef.current) {
@@ -403,8 +299,6 @@ export default function Scene() {
                 <Suspense fallback={null}>
                     <VoronoiBackground />
                     <PointCloudSphere visible={true} />
-                    {/* Ghost body on splash screen */}
-                    <GhostBody visible={!hasEntered} />
                     {/* 3D splash text */}
                     {!hasEntered && <SplashText3D onEnter={handleEnter} />}
                     {sceneState === 'self-cloud' && <SelfModels />}
@@ -417,4 +311,3 @@ export default function Scene() {
 
 // Preload models
 useGLTF.preload('/head.glb');
-useGLTF.preload('/body.glb');

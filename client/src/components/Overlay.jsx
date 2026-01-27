@@ -176,17 +176,17 @@ export default function Overlay() {
                         />
                         {/* Subtle text hint */}
                         <motion.p
-                            animate={{ opacity: [0.3, 0.5, 0.3] }}
+                            animate={{ opacity: [0.4, 0.7, 0.4] }}
                             transition={{ duration: 2, repeat: Infinity }}
                             style={{
                                 position: 'absolute',
-                                bottom: '-60px',
+                                top: '50%',
                                 left: '50%',
-                                transform: 'translateX(-50%)',
-                                fontSize: '0.7rem',
-                                fontWeight: '300',
-                                letterSpacing: '0.2em',
-                                color: 'rgba(0,0,0,0.4)',
+                                transform: 'translate(-50%, 130px)',
+                                fontSize: '0.75rem',
+                                fontWeight: '400',
+                                letterSpacing: '0.15em',
+                                color: 'rgba(0,0,0,0.6)',
                                 whiteSpace: 'nowrap',
                             }}
                         >

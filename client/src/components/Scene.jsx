@@ -273,11 +273,11 @@ function SplashText3D({ onEnter }) {
         return positions;
     }, []);
     
-    // Responsive positioning for mobile
-    const textSize = isMobile ? 0.4 : 0.6;
-    const rmziPosition = isMobile ? [-1.0, -2.0, 6] : [-2.5, -1.5, 5];
-    const enterPosition = isMobile ? [0, -2.5, 6] : [0, -1.5, 5];
-    const enterSize = isMobile ? 0.2 : 0.25;
+    // Responsive positioning for mobile - centered under sphere
+    const textSize = isMobile ? 0.35 : 0.6;
+    const rmziPosition = isMobile ? [0, -2.2, 6] : [-2.5, -1.5, 5];
+    const enterPosition = isMobile ? [0, -2.8, 6] : [0, -1.5, 5];
+    const enterSize = isMobile ? 0.18 : 0.25;
     
     // Show enter after a short delay
     useMemo(() => {
@@ -316,48 +316,42 @@ function SplashText3D({ onEnter }) {
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
             
             {/* Animated letters "rmzi" - responsive position */}
-            <group position={rmziPosition}>
-                {letters.map((letter, i) => (
-                    <AnimatedLetter 
-                        key={i} 
-                        letter={letter} 
-                        index={i} 
-                        xOffset={letterPositions[i] * (textSize / 0.6)} 
-                        size={textSize}
-                    />
-                ))}
-            </group>
+            {isMobile ? (
+                <Center position={rmziPosition}>
+                    <group>
+                        {letters.map((letter, i) => (
+                            <AnimatedLetter 
+                                key={i} 
+                                letter={letter} 
+                                index={i} 
+                                xOffset={letterPositions[i] * (textSize / 0.6)} 
+                                size={textSize}
+                            />
+                        ))}
+                    </group>
+                </Center>
+            ) : (
+                <group position={rmziPosition}>
+                    {letters.map((letter, i) => (
+                        <AnimatedLetter 
+                            key={i} 
+                            letter={letter} 
+                            index={i} 
+                            xOffset={letterPositions[i] * (textSize / 0.6)} 
+                            size={textSize}
+                        />
+                    ))}
+                </group>
+            )}
             
             {/* "enter" button - responsive position */}
             {showEnter && (
-                <Center position={enterPosition}>
-                    <Text3D
-                        ref={enterRef}
-                        font="/helvetiker_regular.typeface.json"
-                        size={enterSize}
-                        height={enterSize * 0.16}
-                        curveSegments={8}
-                        bevelEnabled
-                        bevelThickness={enterSize * 0.024}
-                        bevelSize={enterSize * 0.024}
-                        bevelSegments={2}
-                        material={enterMaterial}
-                        onClick={onEnter}
-                        onPointerOver={() => {
-                            setHovered(true);
-                            document.body.style.cursor = 'pointer';
-                        }}
-                        onPointerOut={() => {
-                            setHovered(false);
-                            document.body.style.cursor = 'auto';
-                        }}
-                    >
-                        enter
-                    </Text3D>
-                    {/* Invisible hitbox for easier clicking */}
+                <group position={enterPosition}>
+                    {/* Large invisible hitbox for easy clicking/tapping */}
                     <mesh 
-                        position={[enterSize * 1.6, enterSize * 0.4, 0.02]} 
-                        onClick={onEnter}
+                        position={[0, 0, 0.1]} 
+                        onClick={(e) => { e.stopPropagation(); onEnter(); }}
+                        onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
                         onPointerOver={() => {
                             setHovered(true);
                             document.body.style.cursor = 'pointer';
@@ -367,10 +361,27 @@ function SplashText3D({ onEnter }) {
                             document.body.style.cursor = 'auto';
                         }}
                     >
-                        <boxGeometry args={[enterSize * 4.8, enterSize * 2, 0.3]} />
+                        <planeGeometry args={[2, 1]} />
                         <meshBasicMaterial transparent opacity={0} />
                     </mesh>
-                </Center>
+                    {/* Visible text */}
+                    <Center>
+                        <Text3D
+                            ref={enterRef}
+                            font="/helvetiker_regular.typeface.json"
+                            size={enterSize}
+                            height={enterSize * 0.16}
+                            curveSegments={8}
+                            bevelEnabled
+                            bevelThickness={enterSize * 0.024}
+                            bevelSize={enterSize * 0.024}
+                            bevelSegments={2}
+                            material={enterMaterial}
+                        >
+                            enter
+                        </Text3D>
+                    </Center>
+                </group>
             )}
         </group>
     );

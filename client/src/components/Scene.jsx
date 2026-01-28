@@ -2,7 +2,7 @@ import { Canvas } from '@react-three/fiber';
 import { Suspense, useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { useGLTF, Text3D, Center } from '@react-three/drei';
+import { useGLTF, Text3D, Center, Environment } from '@react-three/drei';
 import { EffectComposer, ChromaticAberration, Noise } from '@react-three/postprocessing';
 import { BlendFunction } from 'postprocessing';
 import PointCloudSphere from './PointCloudSphere';
@@ -327,7 +327,10 @@ function SceneContent() {
 
             {/* GALLERY state - show room selector */}
             {navState === NavState.GALLERY && (
-                <RoomGallery rooms={rooms} onSelectRoom={handleSelectRoom} />
+                <>
+                    <Environment preset="city" />
+                    <RoomGallery rooms={rooms} onSelectRoom={handleSelectRoom} />
+                </>
             )}
 
             {/* ROOM state - show the selected room */}

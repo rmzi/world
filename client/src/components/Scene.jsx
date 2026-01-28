@@ -7,7 +7,15 @@ import { EffectComposer, ChromaticAberration, Noise } from '@react-three/postpro
 import { BlendFunction } from 'postprocessing';
 import PointCloudSphere from './PointCloudSphere';
 import VoronoiBackground from './VoronoiBackground';
+import RoomGallery from './RoomGallery';
 import { useStore } from '../store';
+import { useRoomRoute, navigateToRoom } from '../rooms/RoomRouter';
+import RoomLoader from '../rooms/RoomLoader';
+import { getAllRooms } from '../rooms/index';
+
+// Import room definitions to register them
+import '../rooms/harp/index';
+import '../rooms/visitor/index';
 
 // Performance: detect mobile/low-power devices
 const isMobile = typeof navigator !== 'undefined' && 
@@ -329,12 +337,43 @@ function SplashText3D({ onEnter }) {
     );
 }
 
+// Room content component - renders based on route
+function RoomContent() {
+    const { route, navigate } = useRoomRoute();
+    const { showGallery, setShowGallery, setCurrentRoom } = useStore();
+    const rooms = getAllRooms();
+
+    // Handle room selection from gallery
+    const handleSelectRoom = (roomId) => {
+        setShowGallery(false);
+        setCurrentRoom(roomId);
+        navigate(roomId);
+    };
+
+    // If showing gallery overlay
+    if (showGallery) {
+        return <RoomGallery rooms={rooms} onSelectRoom={handleSelectRoom} />;
+    }
+
+    // If we have a room route, load that room
+    if (route && rooms.some(r => r.id === route)) {
+        return <RoomLoader roomId={route} />;
+    }
+
+    // Default: show the harp room (backwards compatible)
+    return <PointCloudSphere visible={true} />;
+}
+
 export default function Scene() {
-    const { sceneState, hasEntered, enter } = useStore();
-    
+    const { sceneState, hasEntered, enter, showGallery } = useStore();
+    const { route } = useRoomRoute();
+
     const handleEnter = () => {
         enter(); // Sets hasEntered=true and isAudioPlaying=true
     };
+
+    // Determine if we should show the default sphere or room content
+    const shouldShowDefaultSphere = !showGallery && (!route || route === 'harp');
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
@@ -346,7 +385,27 @@ export default function Scene() {
             >
                 <Suspense fallback={null}>
                     <VoronoiBackground />
-                    <PointCloudSphere visible={true} />
+
+                    {/* Room system content */}
+                    {hasEntered && showGallery && (
+                        <RoomGallery
+                            rooms={getAllRooms()}
+                            onSelectRoom={(roomId) => {
+                                useStore.getState().setShowGallery(false);
+                                useStore.getState().setCurrentRoom(roomId);
+                                navigateToRoom(roomId);
+                            }}
+                        />
+                    )}
+
+                    {/* Default content or room-loaded content */}
+                    {hasEntered && !showGallery && route && route !== 'harp' && (
+                        <RoomLoader roomId={route} />
+                    )}
+
+                    {/* Backwards compatible: show PointCloudSphere when no room route or harp */}
+                    {shouldShowDefaultSphere && <PointCloudSphere visible={true} />}
+
                     {/* 3D splash text */}
                     {!hasEntered && <SplashText3D onEnter={handleEnter} />}
                     {sceneState === 'self-cloud' && <SelfModels />}

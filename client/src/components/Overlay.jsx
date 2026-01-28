@@ -4,6 +4,7 @@ import Work from '../pages/Work';
 import Self from '../pages/Self';
 import Connect from '../pages/Connect';
 import { useState, useEffect } from 'react';
+import { navigateToGallery, useRoomRoute } from '../rooms/RoomRouter';
 
 // Track UI interactions
 const trackInteraction = (action) => {
@@ -15,7 +16,8 @@ const trackInteraction = (action) => {
 };
 
 export default function Overlay() {
-    const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal } = useStore();
+    const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal, showGallery, setShowGallery, currentRoom } = useStore();
+    const { route } = useRoomRoute();
     const [isExpanded, setIsExpanded] = useState(false);
     const [idleHint, setIdleHint] = useState(null); // 'drag to play', 'explore'
     const [lastInteraction, setLastInteraction] = useState(Date.now());
@@ -88,11 +90,93 @@ export default function Overlay() {
         return () => clearTimeout(timer);
     }, [hasEntered, activePage, interactionCount]);
 
+    // Handle gallery toggle
+    const handleGalleryToggle = () => {
+        if (showGallery) {
+            setShowGallery(false);
+        } else {
+            setShowGallery(true);
+            trackInteraction('gallery_open');
+        }
+    };
+
     return (
         <div
             onMouseMove={handleMouseMove}
             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         >
+            {/* Gallery Menu Button (top-left) */}
+            <AnimatePresence>
+                {hasEntered && !activePage && !showGallery && (
+                    <motion.button
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 0.7, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        whileHover={{ opacity: 1, scale: 1.05 }}
+                        transition={{ duration: 0.4 }}
+                        onClick={handleGalleryToggle}
+                        style={{
+                            position: 'fixed',
+                            top: '20px',
+                            left: '20px',
+                            zIndex: 100,
+                            pointerEvents: 'auto',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: 'rgba(0,0,0,0.4)',
+                            backdropFilter: 'blur(8px)',
+                            color: 'white',
+                            fontSize: '1.2rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                        title="Room Gallery"
+                    >
+                        <span style={{ lineHeight: 1 }}>&#9776;</span>
+                    </motion.button>
+                )}
+            </AnimatePresence>
+
+            {/* Gallery Close Button (when gallery is open) */}
+            <AnimatePresence>
+                {hasEntered && showGallery && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 0.9, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ opacity: 1, scale: 1.1 }}
+                        transition={{ duration: 0.3 }}
+                        onClick={() => setShowGallery(false)}
+                        style={{
+                            position: 'fixed',
+                            top: '20px',
+                            right: '20px',
+                            zIndex: 200,
+                            pointerEvents: 'auto',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            border: 'none',
+                            background: 'rgba(0,0,0,0.6)',
+                            backdropFilter: 'blur(8px)',
+                            color: 'white',
+                            fontSize: '1.4rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                        title="Close Gallery"
+                    >
+                        &times;
+                    </motion.button>
+                )}
+            </AnimatePresence>
+
             {/* Idle Hint - simple text that fades in/out once */}
             <AnimatePresence>
                 {idleHint && hasEntered && !activePage && !isPaused && (

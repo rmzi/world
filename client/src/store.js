@@ -93,6 +93,12 @@ export const useStore = create((set, get) => ({
     activePage: null, // null (home), 'work', 'self', 'connect'
     setActivePage: (page) => set({ activePage: page }),
 
+    // Room state for the room system
+    currentRoom: null, // null (gallery) or room id string
+    setCurrentRoom: (roomId) => set({ currentRoom: roomId }),
+    showGallery: false, // Whether to show the room gallery
+    setShowGallery: (val) => set({ showGallery: val }),
+
     // Initial Landing State
     hasEntered: false,
     enter: () => set({ hasEntered: true, isAudioPlaying: true }),

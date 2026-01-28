@@ -1,4 +1,11 @@
 import { create } from 'zustand';
+import {
+  NavState,
+  NavAction,
+  navTransition,
+  getInitialStateFromURL,
+  syncStateToURL,
+} from './navigationMachine';
 
 // Liminal/fluorescent color palette
 const liminalFillColors = [
@@ -12,21 +19,8 @@ const liminalFillColors = [
     '#b8a8b0', // dusty mauve
 ];
 
-const randomColor = () => 
+const randomColor = () =>
     liminalFillColors[Math.floor(Math.random() * liminalFillColors.length)];
-
-// Helper to convert HSL to Hex
-const hslToHex = (h, s, l) => {
-    s /= 100;
-    l /= 100;
-    const a = s * Math.min(l, 1 - l);
-    const f = n => {
-        const k = (n + h / 30) % 12;
-        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-        return Math.round(255 * color).toString(16).padStart(2, '0');
-    };
-    return `#${f(0)}${f(8)}${f(4)}`;
-};
 
 // Liminal stroke colors (muted, slightly darker versions)
 const liminalStrokeColors = [
@@ -39,7 +33,7 @@ const liminalStrokeColors = [
     '#586868', // slate
 ];
 
-const randomStrokeColor = () => 
+const randomStrokeColor = () =>
     liminalStrokeColors[Math.floor(Math.random() * liminalStrokeColors.length)];
 
 // Default visual parameters (liminal theme)
@@ -67,25 +61,66 @@ const liminalStressColors = [
     '#a0b8c9', // pale blue
 ];
 
-const randomStressColor = () => 
+const randomStressColor = () =>
     liminalStressColors[Math.floor(Math.random() * liminalStressColors.length)];
 
 // Generate randomized parameters
 export const generateRandomParams = () => ({
     deformRadius: 0.4 + Math.random() * 1.2,
     deformStrength: 0.2 + Math.random() * 1.5,
-    pointSize: 80 + Math.random() * 200, // Smaller range (80-280)
+    pointSize: 80 + Math.random() * 200,
     strokeWidth: 0.05 + Math.random() * 0.25,
     fillColor: randomColor(),
-    strokeColor: randomStrokeColor(), // Always contrasting
-    stressColor: randomStressColor(), // Vibrant displacement color
+    strokeColor: randomStrokeColor(),
+    stressColor: randomStressColor(),
     rotationSpeed: 0.05 + Math.random() * 0.4,
     springConstant: 0.005 + Math.random() * 0.015,
     damping: 0.92 + Math.random() * 0.06,
     repulsionStrength: 0.02 + Math.random() * 0.06,
 });
 
+// Get initial navigation state from URL
+const initialNavState = getInitialStateFromURL();
+
 export const useStore = create((set, get) => ({
+    // ==========================================================================
+    // NAVIGATION STATE MACHINE
+    // ==========================================================================
+    navState: initialNavState.navState,
+    roomId: initialNavState.roomId,
+
+    // Dispatch a navigation action through the state machine
+    navDispatch: (actionType, payload) => {
+        const currentState = { navState: get().navState, roomId: get().roomId };
+        const action = { type: actionType, payload };
+        const newState = navTransition(currentState, action);
+
+        // Only update if state actually changed
+        if (newState.navState !== currentState.navState || newState.roomId !== currentState.roomId) {
+            set({ navState: newState.navState, roomId: newState.roomId });
+            syncStateToURL(newState);
+
+            // Start audio when entering from splash
+            if (currentState.navState === NavState.SPLASH && newState.navState !== NavState.SPLASH) {
+                set({ isAudioPlaying: true });
+            }
+        }
+    },
+
+    // Convenience actions
+    enter: () => get().navDispatch(NavAction.ENTER),
+    selectRoom: (roomId) => get().navDispatch(NavAction.SELECT_ROOM, { roomId }),
+    openGallery: () => get().navDispatch(NavAction.OPEN_GALLERY),
+    navigateToRoom: (roomId) => get().navDispatch(NavAction.NAVIGATE_ROOM, { roomId }),
+
+    // Derived state helpers
+    isInSplash: () => get().navState === NavState.SPLASH,
+    isInGallery: () => get().navState === NavState.GALLERY,
+    isInRoom: () => get().navState === NavState.ROOM,
+
+    // ==========================================================================
+    // LEGACY STATE (for content pages - work, self, connect)
+    // ==========================================================================
     isPaused: false,
     togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
     setPaused: (val) => set({ isPaused: val }),
@@ -93,25 +128,17 @@ export const useStore = create((set, get) => ({
     activePage: null, // null (home), 'work', 'self', 'connect'
     setActivePage: (page) => set({ activePage: page }),
 
-    // Room state for the room system
-    currentRoom: null, // null (gallery) or room id string
-    setCurrentRoom: (roomId) => set({ currentRoom: roomId }),
-    showGallery: false, // Whether to show the room gallery
-    setShowGallery: (val) => set({ showGallery: val }),
+    // For off-screen transitions (legacy content pages)
+    sceneState: 'sphere', // 'sphere', 'offscreen', 'self-cloud'
+    setSceneState: (state) => set({ sceneState: state }),
 
-    // Initial Landing State
-    hasEntered: false,
-    enter: () => set({ hasEntered: true, isAudioPlaying: true }),
-
-    // Audio state
+    // ==========================================================================
+    // AUDIO STATE
+    // ==========================================================================
     isAudioPlaying: false,
     toggleAudio: () => set((state) => ({ isAudioPlaying: !state.isAudioPlaying })),
     volume: 0.4,
     setVolume: (val) => set({ volume: val }),
-
-    // For off-screen transitions
-    sceneState: 'sphere', // 'sphere', 'offscreen', 'self-cloud'
-    setSceneState: (state) => set({ sceneState: state }),
 
     // Scatter Trigger
     scatterCount: 0,
@@ -133,13 +160,17 @@ export const useStore = create((set, get) => ({
     isEmbedOpen: false,
     setEmbedOpen: (val) => set({ isEmbedOpen: val }),
 
-    // Visual parameters (source of truth)
+    // ==========================================================================
+    // VISUAL PARAMETERS
+    // ==========================================================================
     params: { ...DEFAULT_PARAMS },
     setParams: (newParams) => set((state) => ({ params: { ...state.params, ...newParams } })),
 
-    // Randomize params directly in Zustand
     randomizeParams: () => {
         const newParams = generateRandomParams();
         set({ params: newParams });
     }
 }));
+
+// Re-export NavState and NavAction for convenience
+export { NavState, NavAction };

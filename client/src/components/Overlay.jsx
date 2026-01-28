@@ -1,10 +1,9 @@
-import { useStore } from '../store';
+import { useStore, NavState } from '../store';
 import { motion, AnimatePresence } from 'framer-motion';
 import Work from '../pages/Work';
 import Self from '../pages/Self';
 import Connect from '../pages/Connect';
 import { useState, useEffect } from 'react';
-import { navigateToGallery, useRoomRoute } from '../rooms/RoomRouter';
 
 // Track UI interactions
 const trackInteraction = (action) => {
@@ -16,14 +15,37 @@ const trackInteraction = (action) => {
 };
 
 export default function Overlay() {
-    const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal, showGallery, setShowGallery, currentRoom } = useStore();
-    const { route } = useRoomRoute();
+    // Navigation state machine
+    const navState = useStore(s => s.navState);
+    const roomId = useStore(s => s.roomId);
+    const openGallery = useStore(s => s.openGallery);
+
+    // Legacy state for content pages
+    const isPaused = useStore(s => s.isPaused);
+    const togglePause = useStore(s => s.togglePause);
+    const setPaused = useStore(s => s.setPaused);
+    const setSceneState = useStore(s => s.setSceneState);
+    const activePage = useStore(s => s.activePage);
+    const setActivePage = useStore(s => s.setActivePage);
+
+    // Audio and interaction state
+    const audioLevel = useStore(s => s.audioLevel);
+    const signalActive = useStore(s => s.signalActive);
+    const toggleSignal = useStore(s => s.toggleSignal);
+    const randomizeParams = useStore(s => s.randomizeParams);
+    const scatter = useStore(s => s.scatter);
+
     const [isExpanded, setIsExpanded] = useState(false);
-    const [idleHint, setIdleHint] = useState(null); // 'drag to play', 'explore'
-    const [lastInteraction, setLastInteraction] = useState(Date.now());
+    const [idleHint, setIdleHint] = useState(null);
     const [interactionCount, setInteractionCount] = useState(0);
 
     const premiumEasing = [0.23, 1, 0.32, 1];
+
+    // Derived state
+    const isInSplash = navState === NavState.SPLASH;
+    const isInGallery = navState === NavState.GALLERY;
+    const isInRoom = navState === NavState.ROOM;
+    const hasEntered = !isInSplash;
 
     const handleNav = (page) => {
         setPaused(false);
@@ -45,76 +67,48 @@ export default function Overlay() {
         setPaused(false);
     };
 
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e) => {
-        const { clientWidth, clientHeight } = e.currentTarget;
-        const x = (e.clientX / clientWidth - 0.5) * 2;
-        const y = (e.clientY / clientHeight - 0.5) * 2;
-        setMousePos({ x, y });
+    const handleGalleryOpen = () => {
+        openGallery();
+        trackInteraction('gallery_open');
     };
-
-    const [showPrompt, setShowPrompt] = useState(false);
-
-    // Idle timer for "enter" prompt
-    useEffect(() => {
-        if (!hasEntered) {
-            const timer = setTimeout(() => setShowPrompt(true), 1500);
-            return () => clearTimeout(timer);
-        }
-    }, [hasEntered]);
 
     // Track interactions and reset idle timer
     useEffect(() => {
         const resetIdle = () => {
-            setLastInteraction(Date.now());
             setIdleHint(null);
             setInteractionCount(c => c + 1);
         };
-        
+
         const events = ['pointerdown', 'pointermove', 'keydown', 'scroll'];
         events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
         return () => events.forEach(e => window.removeEventListener(e, resetIdle));
     }, []);
 
-    // Show simple idle hint after 4s (but only once per session)
+    // Show idle hint after 4s in room (but only once per session)
     useEffect(() => {
-        if (!hasEntered || activePage || interactionCount > 3) return;
-        
+        if (!isInRoom || activePage || interactionCount > 3) return;
+
         const timer = setTimeout(() => {
             if (!idleHint) {
                 setIdleHint('drag to play');
             }
         }, 4000);
-        
-        return () => clearTimeout(timer);
-    }, [hasEntered, activePage, interactionCount]);
 
-    // Handle gallery toggle
-    const handleGalleryToggle = () => {
-        if (showGallery) {
-            setShowGallery(false);
-        } else {
-            setShowGallery(true);
-            trackInteraction('gallery_open');
-        }
-    };
+        return () => clearTimeout(timer);
+    }, [isInRoom, activePage, interactionCount, idleHint]);
 
     return (
-        <div
-            onMouseMove={handleMouseMove}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-        >
-            {/* Gallery Menu Button (top-left) */}
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            {/* Gallery Menu Button (top-left) - only show when in a room */}
             <AnimatePresence>
-                {hasEntered && !activePage && !showGallery && (
+                {isInRoom && !activePage && (
                     <motion.button
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 0.7, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         whileHover={{ opacity: 1, scale: 1.05 }}
                         transition={{ duration: 0.4 }}
-                        onClick={handleGalleryToggle}
+                        onClick={handleGalleryOpen}
                         style={{
                             position: 'fixed',
                             top: '20px',
@@ -141,45 +135,39 @@ export default function Overlay() {
                 )}
             </AnimatePresence>
 
-            {/* Gallery Close Button (when gallery is open) */}
+            {/* Room name badge (top-right when in room) */}
             <AnimatePresence>
-                {hasEntered && showGallery && (
-                    <motion.button
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 0.9, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        whileHover={{ opacity: 1, scale: 1.1 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={() => setShowGallery(false)}
+                {isInRoom && roomId && !activePage && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 0.6, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.4 }}
                         style={{
                             position: 'fixed',
                             top: '20px',
                             right: '20px',
-                            zIndex: 200,
-                            pointerEvents: 'auto',
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            border: 'none',
-                            background: 'rgba(0,0,0,0.6)',
+                            zIndex: 100,
+                            pointerEvents: 'none',
+                            padding: '8px 14px',
+                            borderRadius: '8px',
+                            background: 'rgba(0,0,0,0.3)',
                             backdropFilter: 'blur(8px)',
                             color: 'white',
-                            fontSize: '1.4rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            fontSize: '0.7rem',
+                            fontWeight: '500',
+                            letterSpacing: '0.1em',
+                            textTransform: 'uppercase',
                         }}
-                        title="Close Gallery"
                     >
-                        &times;
-                    </motion.button>
+                        {roomId}
+                    </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Idle Hint - simple text that fades in/out once */}
+            {/* Idle Hint - only show when in a room */}
             <AnimatePresence>
-                {idleHint && hasEntered && !activePage && !isPaused && (
+                {idleHint && isInRoom && !activePage && !isPaused && (
                     <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.5 }}
@@ -194,17 +182,17 @@ export default function Overlay() {
                             fontWeight: '300',
                             letterSpacing: '0.2em',
                             color: 'rgba(0,0,0,0.5)',
-                                        textTransform: 'lowercase',
+                            textTransform: 'lowercase',
                             pointerEvents: 'none',
                             zIndex: 5,
-                                    }}
-                                >
+                        }}
+                    >
                         {idleHint}
-                                </motion.p>
+                    </motion.p>
                 )}
             </AnimatePresence>
 
-            {/* 2. Dimming Overlay when Paused */}
+            {/* Dimming Overlay when Paused */}
             <AnimatePresence>
                 {isPaused && hasEntered && (
                     <motion.div
@@ -243,14 +231,14 @@ export default function Overlay() {
                 )}
             </AnimatePresence>
 
-            {/* 3. UI Floating Dock */}
+            {/* UI Floating Dock - only show when in a room */}
             <AnimatePresence>
-                {hasEntered && !activePage && (
+                {isInRoom && !activePage && (
                     <motion.div
                         initial={{ opacity: 0, y: 30, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
                         exit={{ opacity: 0, y: 30, x: '-50%' }}
-                        transition={{ duration: 0.8, delay: 0.5, ease: premiumEasing }}
+                        transition={{ duration: 0.8, delay: 0.3, ease: premiumEasing }}
                         style={{
                             position: 'fixed',
                             bottom: '30px',
@@ -267,7 +255,6 @@ export default function Overlay() {
                             className="glass"
                             layout
                             animate={{
-                                // Green (low) → Yellow (mid) → Red (hot)
                                 backgroundColor: `rgba(${Math.floor(80 + audioLevel * 175)}, ${Math.floor(180 - audioLevel * 130)}, ${Math.floor(80 - audioLevel * 60)}, ${0.75 + audioLevel * 0.2})`,
                                 boxShadow: `0 4px ${10 + audioLevel * 20}px rgba(${Math.floor(audioLevel * 200)}, ${Math.floor(150 - audioLevel * 100)}, 0, ${0.1 + audioLevel * 0.3})`
                             }}
@@ -374,14 +361,14 @@ export default function Overlay() {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={(e) => { e.stopPropagation(); toggleSignal(); trackInteraction('signal_toggle'); }}
                                             animate={{
-                                                background: signalActive 
+                                                background: signalActive
                                                     ? ['rgba(255,100,100,0.8)', 'rgba(255,50,50,0.9)', 'rgba(255,100,100,0.8)']
                                                     : 'rgba(0,0,0,0.03)',
-                                                boxShadow: signalActive 
+                                                boxShadow: signalActive
                                                     ? '0 0 8px rgba(255,50,50,0.5)'
                                                     : '0 0 0px rgba(0,0,0,0)'
                                             }}
-                                            transition={{ 
+                                            transition={{
                                                 background: { duration: 1, repeat: signalActive ? Infinity : 0 },
                                                 boxShadow: { duration: 0.3 }
                                             }}
@@ -397,7 +384,7 @@ export default function Overlay() {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            📡 Signal
+                                            Signal
                                         </motion.button>
                                     </motion.div>
                                 )}
@@ -407,7 +394,7 @@ export default function Overlay() {
                 )}
             </AnimatePresence>
 
-            {/* 4. Content Pages */}
+            {/* Content Pages */}
             <AnimatePresence>
                 {(activePage === 'work' || activePage === 'self' || activePage === 'connect') && hasEntered && (
                     <motion.div

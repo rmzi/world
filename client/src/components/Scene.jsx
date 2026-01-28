@@ -8,17 +8,17 @@ import { BlendFunction } from 'postprocessing';
 import PointCloudSphere from './PointCloudSphere';
 import VoronoiBackground from './VoronoiBackground';
 import RoomGallery from './RoomGallery';
-import { useStore } from '../store';
-import { useRoomRoute, navigateToRoom } from '../rooms/RoomRouter';
+import { useStore, NavState } from '../store';
 import RoomLoader from '../rooms/RoomLoader';
 import { getAllRooms } from '../rooms/index';
+import { isValidRoomId } from '../navigationMachine';
 
 // Import room definitions to register them
 import '../rooms/harp/index';
 import '../rooms/visitor/index';
 
 // Performance: detect mobile/low-power devices
-const isMobile = typeof navigator !== 'undefined' && 
+const isMobile = typeof navigator !== 'undefined' &&
     /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 const quality = {
@@ -30,17 +30,13 @@ const quality = {
 
 // Audio-reactive post-processing effects (skip on mobile)
 function PostEffects() {
-    const { audioLevel } = useStore();
-    
-    // Skip post-processing on mobile for performance
+    const audioLevel = useStore(s => s.audioLevel);
+
     if (!quality.postProcessing) return null;
-    
-    // Calculate offset based on audio level (simple, no ref needed)
+
     const offset = 0.001 + audioLevel * 0.003;
-    
-    // Grain intensity slightly boosted by audio
     const grainIntensity = 0.1 + audioLevel * 0.05;
-    
+
     return (
         <EffectComposer multisampling={0}>
             <ChromaticAberration
@@ -56,7 +52,7 @@ function PostEffects() {
     );
 }
 
-// Rotating head model for the "Self" page - drag to spin
+// Rotating head model for the "Self" page
 function RotatingHead() {
     const headRef = useRef();
     const { scene } = useGLTF('/head.glb');
@@ -64,11 +60,9 @@ function RotatingHead() {
     const previousX = useRef(0);
     const velocityY = useRef(0);
     const autoRotateSpeed = useRef(0.3);
-    
-    // Clone the scene so we can manipulate it
+
     const clonedScene = useMemo(() => scene.clone(), [scene]);
-    
-    // Window-level event listeners for smooth dragging
+
     useEffect(() => {
         const handleMove = (e) => {
             if (!isDragging.current) return;
@@ -80,16 +74,16 @@ function RotatingHead() {
             }
             previousX.current = currentX;
         };
-        
+
         const handleUp = () => {
             isDragging.current = false;
         };
-        
+
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('touchmove', handleMove);
         window.addEventListener('mouseup', handleUp);
         window.addEventListener('touchend', handleUp);
-        
+
         return () => {
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('touchmove', handleMove);
@@ -97,26 +91,21 @@ function RotatingHead() {
             window.removeEventListener('touchend', handleUp);
         };
     }, []);
-    
+
     useFrame((state, delta) => {
         if (headRef.current) {
             if (isDragging.current) {
-                // When dragging, don't auto-rotate
                 autoRotateSpeed.current = 0;
             } else {
-                // Apply velocity with friction
                 velocityY.current *= 0.95;
                 headRef.current.rotation.y += velocityY.current;
-                
-                // Gradually restore auto-rotation
                 autoRotateSpeed.current += (0.3 - autoRotateSpeed.current) * 0.01;
                 headRef.current.rotation.y += delta * autoRotateSpeed.current;
             }
-            // Subtle bob
             headRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
         }
     });
-    
+
     const handlePointerDown = (e) => {
         e.stopPropagation();
         isDragging.current = true;
@@ -124,11 +113,10 @@ function RotatingHead() {
         velocityY.current = 0;
         document.body.style.cursor = 'grabbing';
     };
-    
+
     return (
         <group ref={headRef} position={[0, 0.3, 0]} scale={8}>
-            {/* Clickable hitbox - visible but nearly transparent */}
-            <mesh 
+            <mesh
                 position={[0, -1.68, 0]}
                 onPointerDown={handlePointerDown}
                 onPointerOver={() => { document.body.style.cursor = 'grab'; }}
@@ -137,7 +125,6 @@ function RotatingHead() {
                 <sphereGeometry args={[0.2, 16, 16]} />
                 <meshBasicMaterial transparent opacity={0.001} depthWrite={false} />
             </mesh>
-            {/* Center the head (it's positioned at y ~1.7 in original) */}
             <group position={[0, -1.68, 0]}>
                 <primitive object={clonedScene} />
             </group>
@@ -145,43 +132,37 @@ function RotatingHead() {
     );
 }
 
-// Self page - just the rotating head
 function SelfModels() {
     return (
         <group>
-            {/* Ambient light for the head model */}
             <ambientLight intensity={0.6} />
             <directionalLight position={[5, 5, 5]} intensity={0.8} />
             <directionalLight position={[-5, 3, -5]} intensity={0.3} />
-            
-            {/* Main head in center */}
             <RotatingHead />
         </group>
     );
 }
 
-// Animated individual letter for splash screen
+// Animated letter for splash screen
 function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
     const letterRef = useRef();
     const materialRef = useRef();
-    
-    // Random animation speeds per letter (like the original HTML version)
+
     const speeds = useMemo(() => ({
         y: 2 + Math.random(),
         x: 1.5 + Math.random(),
         z: 2.5 + Math.random(),
     }), []);
-    
-    // Fade in delay per letter
+
     const [opacity, setOpacity] = useState(0);
-    useMemo(() => {
-        setTimeout(() => setOpacity(0.9), index * 80);
+    useEffect(() => {
+        const timer = setTimeout(() => setOpacity(0.9), index * 80);
+        return () => clearTimeout(timer);
     }, [index]);
 
     useFrame((state) => {
         if (letterRef.current) {
             const t = state.clock.elapsedTime;
-            // Animate y: [0, -0.03, 0.03, 0] and x: [0, 0.015, -0.015, 0]
             letterRef.current.position.y = Math.sin(t / speeds.y * Math.PI * 2) * 0.03;
             letterRef.current.position.x = xOffset + Math.sin(t / speeds.x * Math.PI * 2) * 0.015;
             letterRef.current.position.z = Math.sin(t / speeds.z * Math.PI * 2) * 0.01;
@@ -190,7 +171,7 @@ function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
             materialRef.current.opacity = opacity;
         }
     });
-    
+
     const material = useMemo(() => new THREE.MeshStandardMaterial({
         color: '#1a1a1a',
         metalness: 0.1,
@@ -198,7 +179,7 @@ function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
         transparent: true,
         opacity: 0,
     }), []);
-    
+
     return (
         <group ref={letterRef} position={[xOffset, 0, 0]}>
             <Text3D
@@ -218,49 +199,42 @@ function AnimatedLetter({ letter, index, xOffset, size = 0.6 }) {
     );
 }
 
-// 3D text for the splash screen
+// 3D splash screen
 function SplashText3D({ onEnter }) {
     const groupRef = useRef();
     const enterRef = useRef();
     const [hovered, setHovered] = useState(false);
-    const showEnter = true; // Always show enter immediately
     const enterOpacity = useRef(0);
-    
-    // Letter positions (approximate widths for helvetiker)
+
     const letters = ['r', 'm', 'z', 'i'];
-    const letterWidths = [0.35, 0.55, 0.4, 0.2]; // approximate widths
+    const letterWidths = [0.35, 0.55, 0.4, 0.2];
     const letterPositions = useMemo(() => {
         const positions = [];
-        let currentX = -0.65; // start offset to center
+        let currentX = -0.65;
         letters.forEach((_, i) => {
             positions.push(currentX);
-            currentX += letterWidths[i] + 0.05; // width + spacing
+            currentX += letterWidths[i] + 0.05;
         });
         return positions;
     }, []);
-    
-    // Centered on page, in front of sphere (z=4 puts it closer to camera)
+
     const textSize = isMobile ? 0.5 : 0.7;
     const rmziPosition = [0, 0.3, 4];
     const enterPosition = [0, -0.9, 4];
     const enterSize = isMobile ? 0.18 : 0.22;
-    
+
     useFrame((state) => {
         if (groupRef.current) {
-            // Very subtle overall rotation
             groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.015;
         }
-        
-        // Animate enter opacity
-        if (showEnter) {
-            const targetOpacity = hovered ? 0.9 : 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.15;
-            enterOpacity.current += (targetOpacity - enterOpacity.current) * 0.1;
-            if (enterRef.current) {
-                enterRef.current.material.opacity = enterOpacity.current;
-            }
+
+        const targetOpacity = hovered ? 0.9 : 0.3 + Math.sin(state.clock.elapsedTime * 2) * 0.15;
+        enterOpacity.current += (targetOpacity - enterOpacity.current) * 0.1;
+        if (enterRef.current) {
+            enterRef.current.material.opacity = enterOpacity.current;
         }
     });
-    
+
     const enterMaterial = useMemo(() => new THREE.MeshStandardMaterial({
         color: '#1a1a1a',
         metalness: 0.1,
@@ -271,109 +245,144 @@ function SplashText3D({ onEnter }) {
 
     return (
         <group ref={groupRef}>
-            {/* Lighting for text */}
             <ambientLight intensity={0.5} />
             <directionalLight position={[3, 3, 5]} intensity={0.6} />
             <directionalLight position={[-3, 1, 3]} intensity={0.3} />
-            
-            {/* Animated letters "rmzi" - centered */}
+
             <Center position={rmziPosition}>
-        <group>
+                <group>
                     {letters.map((letter, i) => (
-                        <AnimatedLetter 
-                            key={i} 
-                            letter={letter} 
-                            index={i} 
-                            xOffset={letterPositions[i] * (textSize / 0.7)} 
+                        <AnimatedLetter
+                            key={i}
+                            letter={letter}
+                            index={i}
+                            xOffset={letterPositions[i] * (textSize / 0.7)}
                             size={textSize}
                         />
                     ))}
                 </group>
             </Center>
-            
-            {/* "enter" button - responsive position */}
-            {showEnter && (
-                <group position={enterPosition}>
-                    {/* Large invisible hitbox for easy clicking/tapping */}
-                    <mesh 
-                        position={[0, 0, 0.2]} 
-                        onClick={(e) => { e.stopPropagation(); onEnter(); }}
-                        onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
-                        onPointerUp={(e) => { e.stopPropagation(); onEnter(); }}
-                        onPointerOver={() => {
-                            setHovered(true);
-                            document.body.style.cursor = 'pointer';
-                        }}
-                        onPointerOut={() => {
-                            setHovered(false);
-                            document.body.style.cursor = 'auto';
-                        }}
+
+            <group position={enterPosition}>
+                <mesh
+                    position={[0, 0, 0.2]}
+                    onClick={(e) => { e.stopPropagation(); onEnter(); }}
+                    onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
+                    onPointerOver={() => {
+                        setHovered(true);
+                        document.body.style.cursor = 'pointer';
+                    }}
+                    onPointerOut={() => {
+                        setHovered(false);
+                        document.body.style.cursor = 'auto';
+                    }}
+                >
+                    <planeGeometry args={[2.5, 1.2]} />
+                    <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+                </mesh>
+                <Center>
+                    <Text3D
+                        ref={enterRef}
+                        font="/helvetiker_regular.typeface.json"
+                        size={enterSize}
+                        height={enterSize * 0.16}
+                        curveSegments={8}
+                        bevelEnabled
+                        bevelThickness={enterSize * 0.024}
+                        bevelSize={enterSize * 0.024}
+                        bevelSegments={2}
+                        material={enterMaterial}
                     >
-                        <planeGeometry args={[2.5, 1.2]} />
-                        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-            </mesh>
-                    {/* Visible text - also clickable */}
-                    <Center>
-                        <Text3D
-                            ref={enterRef}
-                            font="/helvetiker_regular.typeface.json"
-                            size={enterSize}
-                            height={enterSize * 0.16}
-                            curveSegments={8}
-                            bevelEnabled
-                            bevelThickness={enterSize * 0.024}
-                            bevelSize={enterSize * 0.024}
-                            bevelSegments={2}
-                            material={enterMaterial}
-                            onClick={(e) => { e.stopPropagation(); onEnter(); }}
-                            onPointerDown={(e) => { e.stopPropagation(); onEnter(); }}
-                        >
-                            enter
-                        </Text3D>
-                    </Center>
-                </group>
-            )}
+                        enter
+                    </Text3D>
+                </Center>
+            </group>
         </group>
     );
 }
 
-// Room content component - renders based on route
-function RoomContent() {
-    const { route, navigate } = useRoomRoute();
-    const { showGallery, setShowGallery, setCurrentRoom } = useStore();
+// Main scene content - controlled by navigation state machine
+function SceneContent() {
+    const navState = useStore(s => s.navState);
+    const roomId = useStore(s => s.roomId);
+    const sceneState = useStore(s => s.sceneState);
+    const enter = useStore(s => s.enter);
+    const selectRoom = useStore(s => s.selectRoom);
+
     const rooms = getAllRooms();
 
     // Handle room selection from gallery
-    const handleSelectRoom = (roomId) => {
-        setShowGallery(false);
-        setCurrentRoom(roomId);
-        navigate(roomId);
+    const handleSelectRoom = (selectedRoomId) => {
+        if (isValidRoomId(selectedRoomId, rooms)) {
+            selectRoom(selectedRoomId);
+        }
     };
 
-    // If showing gallery overlay
-    if (showGallery) {
-        return <RoomGallery rooms={rooms} onSelectRoom={handleSelectRoom} />;
-    }
+    return (
+        <>
+            {/* Background - always visible */}
+            <VoronoiBackground />
 
-    // If we have a room route, load that room
-    if (route && rooms.some(r => r.id === route)) {
-        return <RoomLoader roomId={route} />;
-    }
+            {/* SPLASH state - show splash screen */}
+            {navState === NavState.SPLASH && (
+                <SplashText3D onEnter={enter} />
+            )}
 
-    // Default: show the harp room (backwards compatible)
-    return <PointCloudSphere visible={true} />;
+            {/* GALLERY state - show room selector */}
+            {navState === NavState.GALLERY && (
+                <RoomGallery rooms={rooms} onSelectRoom={handleSelectRoom} />
+            )}
+
+            {/* ROOM state - show the selected room */}
+            {navState === NavState.ROOM && roomId && (
+                <>
+                    {roomId === 'harp' ? (
+                        <PointCloudSphere visible={true} />
+                    ) : (
+                        <RoomLoader roomId={roomId} />
+                    )}
+                </>
+            )}
+
+            {/* Legacy: Self page content */}
+            {sceneState === 'self-cloud' && <SelfModels />}
+
+            {/* Post-processing effects */}
+            <PostEffects />
+        </>
+    );
+}
+
+// Listen for browser back/forward navigation
+function useHashNavigation() {
+    const navigateToRoom = useStore(s => s.navigateToRoom);
+    const openGallery = useStore(s => s.openGallery);
+    const navState = useStore(s => s.navState);
+
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash;
+
+            // Don't respond to hash changes while in splash
+            if (navState === NavState.SPLASH) return;
+
+            if (!hash || hash === '#' || hash === '#/') {
+                openGallery();
+            } else {
+                const roomId = hash.replace(/^#\/?/, '');
+                if (roomId) {
+                    navigateToRoom(roomId);
+                }
+            }
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, [navState, navigateToRoom, openGallery]);
 }
 
 export default function Scene() {
-    const { sceneState, hasEntered, enter, showGallery } = useStore();
-    const { route } = useRoomRoute();
-
-    const handleEnter = () => {
-        enter(); // Sets hasEntered=true and isAudioPlaying=true
-    };
-
-    // Determine if we should show the default sphere or room content
-    const shouldShowDefaultSphere = !showGallery && (!route || route === 'harp');
+    useHashNavigation();
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
@@ -384,37 +393,11 @@ export default function Scene() {
                 gl={{ antialias: false, powerPreference: 'high-performance' }}
             >
                 <Suspense fallback={null}>
-                    <VoronoiBackground />
-
-                    {/* Room system content */}
-                    {hasEntered && showGallery && (
-                        <RoomGallery
-                            rooms={getAllRooms()}
-                            onSelectRoom={(roomId) => {
-                                useStore.getState().setShowGallery(false);
-                                useStore.getState().setCurrentRoom(roomId);
-                                navigateToRoom(roomId);
-                            }}
-                        />
-                    )}
-
-                    {/* Default content or room-loaded content */}
-                    {hasEntered && !showGallery && route && route !== 'harp' && (
-                        <RoomLoader roomId={route} />
-                    )}
-
-                    {/* Backwards compatible: show PointCloudSphere when no room route or harp */}
-                    {shouldShowDefaultSphere && <PointCloudSphere visible={true} />}
-
-                    {/* 3D splash text */}
-                    {!hasEntered && <SplashText3D onEnter={handleEnter} />}
-                    {sceneState === 'self-cloud' && <SelfModels />}
-                    <PostEffects />
+                    <SceneContent />
                 </Suspense>
             </Canvas>
         </div>
     );
 }
 
-// Preload models
 useGLTF.preload('/head.glb');

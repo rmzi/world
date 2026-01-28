@@ -10,12 +10,9 @@ import VoronoiBackground from './VoronoiBackground';
 import RoomGallery from './RoomGallery';
 import { useStore, NavState } from '../store';
 import RoomLoader from '../rooms/RoomLoader';
+// getAllRooms triggers room registration via rooms/index.js imports
 import { getAllRooms } from '../rooms/index';
 import { isValidRoomId } from '../navigationMachine';
-
-// Import room definitions to register them
-import '../rooms/harp/index';
-import '../rooms/visitor/index';
 
 // Performance: detect mobile/low-power devices
 const isMobile = typeof navigator !== 'undefined' &&

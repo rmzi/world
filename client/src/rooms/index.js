@@ -25,3 +25,10 @@ export const getRoomsByDay = () =>
 
 // Default export is the rooms Map for direct access
 export default rooms
+
+// =============================================================================
+// ROOM REGISTRATION - Import all rooms here to ensure they're registered
+// This runs synchronously when the module is first imported
+// =============================================================================
+import './harp/index'
+import './visitor/index'

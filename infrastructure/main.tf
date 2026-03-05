@@ -63,7 +63,7 @@ resource "aws_s3_bucket_policy" "website" {
 
 resource "aws_acm_certificate" "website" {
   domain_name               = local.domain_name
-  subject_alternative_names = ["www.${local.domain_name}"]
+  subject_alternative_names = ["*.${local.domain_name}"]
   validation_method         = "DNS"
 
   lifecycle {
@@ -322,50 +322,82 @@ data "archive_file" "email_forwarder" {
     content  = <<-EOF
 import boto3
 import email
+import html
 import os
+import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
+def strip_html(s):
+    s = re.sub(r'<br\s*/?>', '\n', s, flags=re.IGNORECASE)
+    s = re.sub(r'</(p|div|tr|li|h[1-6])>', '\n', s, flags=re.IGNORECASE)
+    s = re.sub(r'<[^>]+>', '', s)
+    return html.unescape(s).strip()
+
+def extract_body(msg):
+    text_body = None
+    html_body = None
+
+    if msg.is_multipart():
+        for part in msg.walk():
+            ct = part.get_content_type()
+            if ct == 'text/plain' and text_body is None:
+                payload = part.get_payload(decode=True)
+                if payload:
+                    text_body = payload.decode('utf-8', errors='ignore')
+            elif ct == 'text/html' and html_body is None:
+                payload = part.get_payload(decode=True)
+                if payload:
+                    html_body = payload.decode('utf-8', errors='ignore')
+    else:
+        payload = msg.get_payload(decode=True)
+        if payload:
+            decoded = payload.decode('utf-8', errors='ignore')
+            if msg.get_content_type() == 'text/html':
+                html_body = decoded
+            else:
+                text_body = decoded
+
+    if text_body:
+        return text_body
+    if html_body:
+        return strip_html(html_body)
+    return ''
+
 def handler(event, context):
     s3 = boto3.client('s3')
     ses = boto3.client('ses', region_name='us-east-1')
-    
+
     record = event['Records'][0]
     bucket = record['s3']['bucket']['name']
     key = record['s3']['object']['key']
-    
+
     response = s3.get_object(Bucket=bucket, Key=key)
     raw_email = response['Body'].read()
     msg = email.message_from_bytes(raw_email)
-    
+
     forward_to = os.environ['FORWARD_TO']
     from_addr = 'hello@${local.domain_name}'
-    
+
     # Create forwarded message
     new_msg = MIMEMultipart()
     new_msg['Subject'] = f"[Fwd] {msg['Subject']}"
     new_msg['From'] = from_addr
     new_msg['To'] = forward_to
     new_msg['Reply-To'] = msg['From']
-    
+
     body = f"--- Forwarded from {msg['From']} ---\n\n"
-    
-    if msg.is_multipart():
-        for part in msg.walk():
-            if part.get_content_type() == 'text/plain':
-                body += part.get_payload(decode=True).decode('utf-8', errors='ignore')
-    else:
-        body += msg.get_payload(decode=True).decode('utf-8', errors='ignore')
-    
+    body += extract_body(msg)
+
     new_msg.attach(MIMEText(body, 'plain'))
-    
+
     ses.send_raw_email(
         Source=from_addr,
         Destinations=[forward_to],
         RawMessage={'Data': new_msg.as_string()}
     )
-    
+
     return {'statusCode': 200}
     EOF
     filename = "index.py"

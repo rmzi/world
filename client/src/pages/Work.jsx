@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { works } from '../data';
+import { works, projects, press } from '../data';
 import { useStore } from '../store';
 
 // Track mix/embed opens
@@ -11,6 +11,42 @@ const trackMixOpen = (mixTitle) => {
             event_label: mixTitle,
         });
     }
+};
+
+const trackOutboundClick = (url, label) => {
+    if (typeof window.gtag === 'function') {
+        window.gtag('event', 'outbound', {
+            event_category: 'engagement',
+            event_label: label,
+            transport_type: 'beacon',
+        });
+    }
+};
+
+const sectionLabelStyle = {
+    fontSize: '0.65rem',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
+    opacity: 0.4,
+    color: '#1a1a1a',
+    padding: '20px 20px 4px',
+    margin: 0,
+};
+
+const linkItemStyle = {
+    width: '100%',
+    padding: '16px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    background: 'transparent',
+    border: 'none',
+    color: '#1a1a1a',
+    cursor: 'pointer',
+    textAlign: 'left',
+    borderRadius: '8px',
+    textDecoration: 'none',
 };
 
 export default function Work() {
@@ -61,15 +97,67 @@ export default function Work() {
                     margin: '0 auto',
                 }}
             >
-            {works.map((work, index) => (
-                <motion.div
-                    key={work.id}
+                {/* Projects Section */}
+                <p style={sectionLabelStyle}>Projects</p>
+                {projects.map((project, index) => (
+                    <motion.div
+                        key={project.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         style={{
-                            borderBottom: index < works.length - 1 
-                                ? '1px solid rgba(0,0,0,0.08)' 
+                            borderBottom: '1px solid rgba(0,0,0,0.08)',
+                        }}
+                    >
+                        <motion.a
+                            href={project.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => trackOutboundClick(project.url, project.title)}
+                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                            style={linkItemStyle}
+                        >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <h3 style={{
+                                    margin: 0,
+                                    fontSize: '1rem',
+                                    fontWeight: '500',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}>
+                                    {project.title}
+                                </h3>
+                                <span style={{
+                                    fontSize: '0.75rem',
+                                    opacity: 0.5,
+                                }}>
+                                    {project.subtitle}
+                                </span>
+                            </div>
+                            <span style={{
+                                fontSize: '0.85rem',
+                                opacity: 0.4,
+                                marginLeft: '12px',
+                                flexShrink: 0,
+                            }}>
+                                ↗
+                            </span>
+                        </motion.a>
+                    </motion.div>
+                ))}
+
+                {/* Mixes Section */}
+                <p style={{ ...sectionLabelStyle, paddingTop: '28px' }}>Mixes</p>
+                {works.map((work, index) => (
+                    <motion.div
+                        key={work.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (projects.length + index) * 0.05 }}
+                        style={{
+                            borderBottom: index < works.length - 1
+                                ? '1px solid rgba(0,0,0,0.08)'
                                 : 'none',
                         }}
                     >
@@ -77,7 +165,7 @@ export default function Work() {
                         <motion.button
                             onClick={() => toggleItem(work.id, work.title)}
                             whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                    style={{
+                            style={{
                                 width: '100%',
                                 padding: '16px 20px',
                                 display: 'flex',
@@ -86,34 +174,34 @@ export default function Work() {
                                 background: 'transparent',
                                 border: 'none',
                                 color: '#1a1a1a',
-                        cursor: 'pointer',
+                                cursor: 'pointer',
                                 textAlign: 'left',
                                 borderRadius: '8px',
-                    }}
-                >
+                            }}
+                        >
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <h3 style={{ 
-                                    margin: 0, 
+                                <h3 style={{
+                                    margin: 0,
                                     fontSize: '1rem',
                                     fontWeight: '500',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                 }}>
-                        {work.title}
+                                    {work.title}
                                 </h3>
-                                <span style={{ 
-                                    fontSize: '0.75rem', 
+                                <span style={{
+                                    fontSize: '0.75rem',
                                     opacity: 0.5,
                                 }}>
-                        {work.date}
+                                    {work.date}
                                 </span>
                             </div>
-                            
+
                             <motion.span
                                 animate={{ rotate: expandedId === work.id ? 180 : 0 }}
                                 transition={{ duration: 0.2 }}
-                                style={{ 
+                                style={{
                                     fontSize: '1.2rem',
                                     opacity: 0.5,
                                     marginLeft: '12px',
@@ -126,24 +214,24 @@ export default function Work() {
 
                         {/* Accordion Content */}
                         <AnimatePresence>
-                    {expandedId === work.id && (
-                        <motion.div
+                            {expandedId === work.id && (
+                                <motion.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: 'auto', opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                                     style={{ overflow: 'hidden' }}
-                        >
+                                >
                                     <div style={{ padding: '0 20px 20px' }}>
-                                        <p style={{ 
-                                            fontSize: '0.85rem', 
-                                            opacity: 0.6, 
+                                        <p style={{
+                                            fontSize: '0.85rem',
+                                            opacity: 0.6,
                                             margin: '0 0 16px',
                                             lineHeight: 1.5
                                         }}>
                                             {work.subtitle}
                                         </p>
-                                        
+
                                         {work.youtubeId && (
                                             <div style={{
                                                 position: 'relative',
@@ -170,11 +258,65 @@ export default function Work() {
                                             </div>
                                         )}
                                     </div>
-                        </motion.div>
-                    )}
+                                </motion.div>
+                            )}
                         </AnimatePresence>
-                </motion.div>
-            ))}
+                    </motion.div>
+                ))}
+
+                {/* Press Section */}
+                <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                    <p style={{ ...sectionLabelStyle, paddingTop: '28px' }}>Press</p>
+                    {press.map((item, index) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: (projects.length + works.length + index) * 0.05 }}
+                            style={{
+                                borderBottom: index < press.length - 1
+                                    ? '1px solid rgba(0,0,0,0.08)'
+                                    : 'none',
+                            }}
+                        >
+                            <motion.a
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => trackOutboundClick(item.url, item.title)}
+                                whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                                style={linkItemStyle}
+                            >
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 style={{
+                                        margin: 0,
+                                        fontSize: '1rem',
+                                        fontWeight: '500',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}>
+                                        {item.title}
+                                    </h3>
+                                    <span style={{
+                                        fontSize: '0.75rem',
+                                        opacity: 0.5,
+                                    }}>
+                                        {item.source}{item.date ? ` · ${item.date}` : ''}
+                                    </span>
+                                </div>
+                                <span style={{
+                                    fontSize: '0.85rem',
+                                    opacity: 0.4,
+                                    marginLeft: '12px',
+                                    flexShrink: 0,
+                                }}>
+                                    ↗
+                                </span>
+                            </motion.a>
+                        </motion.div>
+                    ))}
+                </div>
             </motion.div>
         </div>
     );

@@ -10,3 +10,6 @@ dist
 extract-head.mjs
 model.glb
 model.gltf
+
+# Worktrees
+.worktrees/

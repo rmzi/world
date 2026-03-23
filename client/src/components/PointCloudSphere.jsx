@@ -772,7 +772,7 @@ export default function PointCloudSphere({ visible = true }) {
                 materialRef.current.uTime += delta;
             }
 
-            const isExploded = sceneState === 'offscreen' || sceneState === 'self-cloud';
+            const isExploded = sceneState !== 'harp' && sceneState !== 'sphere';
             const targetExplode = isExploded ? 1.0 : 0.0;
             materialRef.current.uExplode = THREE.MathUtils.lerp(
                 materialRef.current.uExplode,
@@ -818,7 +818,7 @@ export default function PointCloudSphere({ visible = true }) {
 
         // Rotate - sync all geometries
         if (meshRef.current && !isPaused) {
-            const isExploded = sceneState === 'offscreen' || sceneState === 'self-cloud';
+            const isExploded = sceneState !== 'harp' && sceneState !== 'sphere';
             const rotationMultiplier = isExploded ? 0.05 : 1.0;
             const rotDelta = delta * activeParams.rotationSpeed * rotationMultiplier;
             meshRef.current.rotation.y += rotDelta;
@@ -833,7 +833,7 @@ export default function PointCloudSphere({ visible = true }) {
         }
     });
 
-    const linesVisible = visible && !(sceneState === 'offscreen' || sceneState === 'self-cloud');
+    const linesVisible = visible && (sceneState === 'harp' || sceneState === 'sphere');
 
     return (
         <>
@@ -875,20 +875,20 @@ export default function PointCloudSphere({ visible = true }) {
                 <pointCloudMaterial ref={materialRef} transparent depthWrite={true} depthTest={true} />
             </points>
 
-            {/* Only enable sphere interaction after entering (audio context loaded) */}
+            {/* Only enable sphere interaction in harp mode */}
             <mesh
                 ref={dummySphereRef}
-                onPointerDown={hasEntered ? (e) => {
+                onPointerDown={(hasEntered && sceneState === 'harp') ? (e) => {
                     e.stopPropagation();
                     setHoverPoint(e.point);
                 } : undefined}
-                onPointerMove={hasEntered ? (e) => {
+                onPointerMove={(hasEntered && sceneState === 'harp') ? (e) => {
                     if (e.buttons > 0) {
                         setHoverPoint(e.point);
                     }
                 } : undefined}
-                onPointerUp={hasEntered ? () => setHoverPoint(null) : undefined}
-                onPointerOut={hasEntered ? () => setHoverPoint(null) : undefined}
+                onPointerUp={(hasEntered && sceneState === 'harp') ? () => setHoverPoint(null) : undefined}
+                onPointerOut={(hasEntered && sceneState === 'harp') ? () => setHoverPoint(null) : undefined}
             >
                 <sphereGeometry args={[2.2, 16, 16]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />

@@ -95,7 +95,7 @@ export const useStore = create((set, get) => ({
 
     // Initial Landing State
     hasEntered: false,
-    enter: () => set({ hasEntered: true, isAudioPlaying: true }),
+    enter: () => set({ hasEntered: true, isAudioPlaying: true, sceneState: 'home' }),
 
     // Audio state
     isAudioPlaying: false,
@@ -104,8 +104,12 @@ export const useStore = create((set, get) => ({
     setVolume: (val) => set({ volume: val }),
 
     // For off-screen transitions
-    sceneState: 'sphere', // 'sphere', 'offscreen', 'self-cloud'
+    sceneState: 'sphere', // 'home', 'sphere', 'harp', 'offscreen', 'self-cloud'
     setSceneState: (state) => set({ sceneState: state }),
+
+    // Harp mode (interactive sphere from Work page)
+    enterHarp: () => set({ sceneState: 'harp', activePage: 'harp' }),
+    exitHarp: () => set({ sceneState: 'offscreen', activePage: 'work' }),
 
     // Scatter Trigger
     scatterCount: 0,

@@ -18,20 +18,22 @@ const trackPageView = (pagePath, pageTitle) => {
 };
 
 function App() {
-  const { activePage, hasEntered } = useStore();
+  const { activePage, hasEntered, sceneState } = useStore();
   const [showControls, setShowControls] = useState(false);
 
   // Track page views when navigation changes
   useEffect(() => {
     if (!hasEntered) {
       trackPageView('/', 'rmzi - Splash');
+    } else if (activePage === 'harp') {
+      trackPageView('/work/harp', 'rmzi - Harp');
     } else if (activePage === null) {
       trackPageView('/home', 'rmzi - Home');
     } else {
       const title = activePage.charAt(0).toUpperCase() + activePage.slice(1);
       trackPageView(`/${activePage}`, `rmzi - ${title}`);
     }
-  }, [activePage, hasEntered]);
+  }, [activePage, hasEntered, sceneState]);
 
   return (
     <div className="app-container">

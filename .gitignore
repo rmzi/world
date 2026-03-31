@@ -2,9 +2,11 @@ node_modules
 .DS_Store
 dist
 .env
-.terraform
+**/.terraform
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
+email_forwarder.zip
 
 # Temporary model files
 extract-head.mjs

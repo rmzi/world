@@ -698,6 +698,31 @@ data "aws_route53_zone" "mziabdoch_parent" {
   private_zone = false
 }
 
+resource "aws_ses_domain_identity" "mziabdoch" {
+  domain = "mziabdo.ch"
+}
+
+resource "aws_route53_record" "mziabdoch_ses_verification" {
+  zone_id = data.aws_route53_zone.mziabdoch_parent.zone_id
+  name    = "_amazonses.mziabdo.ch"
+  type    = "TXT"
+  ttl     = 600
+  records = [aws_ses_domain_identity.mziabdoch.verification_token]
+}
+
+resource "aws_ses_domain_dkim" "mziabdoch" {
+  domain = aws_ses_domain_identity.mziabdoch.domain
+}
+
+resource "aws_route53_record" "mziabdoch_ses_dkim" {
+  count   = 3
+  zone_id = data.aws_route53_zone.mziabdoch_parent.zone_id
+  name    = "${aws_ses_domain_dkim.mziabdoch.dkim_tokens[count.index]}._domainkey.mziabdo.ch"
+  type    = "CNAME"
+  ttl     = 600
+  records = ["${aws_ses_domain_dkim.mziabdoch.dkim_tokens[count.index]}.dkim.amazonses.com"]
+}
+
 resource "aws_route53_record" "mziabdoch_mx" {
   zone_id = data.aws_route53_zone.mziabdoch_parent.zone_id
   name    = "mziabdo.ch"

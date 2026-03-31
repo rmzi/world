@@ -66,6 +66,15 @@ export const works = [
     },
 ];
 
+export const gameDemos = [
+    {
+        id: 'ramblegate',
+        title: 'RambleGate Classique',
+        subtitle: 'A retro text-based adventure game',
+        url: 'https://ramblegate.rmzi.world',
+    },
+];
+
 export const bio = {
     id: 1,
     text: "Hi my name is rmzi",

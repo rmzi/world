@@ -40,8 +40,8 @@ resource "aws_s3_bucket_policy" "website" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowCloudFrontServicePrincipal"
-        Effect    = "Allow"
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
         Principal = {
           Service = "cloudfront.amazonaws.com"
         }
@@ -283,8 +283,8 @@ resource "aws_iam_role" "email_forwarder" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "lambda.amazonaws.com" }
     }]
   })
@@ -462,6 +462,234 @@ resource "aws_ses_receipt_rule" "store" {
 }
 
 # ============================================================================
+# Ramblegate (ramblegate.rmzi.world)
+# ============================================================================
+
+resource "aws_s3_bucket" "ramblegate" {
+  bucket = "ramblegate.rmzi.world"
+}
+
+resource "aws_s3_bucket_public_access_block" "ramblegate" {
+  bucket = aws_s3_bucket.ramblegate.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "ramblegate" {
+  bucket = aws_s3_bucket.ramblegate.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCloudFrontServicePrincipal"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.ramblegate.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.ramblegate.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_cloudfront_origin_access_control" "ramblegate" {
+  name                              = "ramblegate.${local.domain_name}-oac"
+  description                       = "OAC for ramblegate.${local.domain_name}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_distribution" "ramblegate" {
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  aliases             = ["ramblegate.${local.domain_name}"]
+  price_class         = "PriceClass_100"
+
+  origin {
+    domain_name              = aws_s3_bucket.ramblegate.bucket_regional_domain_name
+    origin_id                = "S3-ramblegate.${local.domain_name}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.ramblegate.id
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3-ramblegate.${local.domain_name}"
+    viewer_protocol_policy = "redirect-to-https"
+    compress               = true
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 3600
+    max_ttl     = 86400
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate_validation.website.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  depends_on = [aws_acm_certificate_validation.website]
+}
+
+resource "aws_route53_record" "ramblegate" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "ramblegate.${local.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.ramblegate.domain_name
+    zone_id                = aws_cloudfront_distribution.ramblegate.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# ============================================================================
+# ra.mziabdo.ch redirect to rmzi.world
+# NOTE: Before applying, delete the old Pulumi-managed CloudFront distribution
+# E1COQURM5WPOZM (remove ra.mziabdo.ch alias) so this can take over.
+# Also delete the old S3 bucket site-prod-s3-site-ovvkb after migrating
+# ramblegate content to ramblegate.rmzi.world.
+# ============================================================================
+
+data "aws_route53_zone" "mziabdoch" {
+  name         = "ra.mziabdo.ch"
+  private_zone = false
+}
+
+resource "aws_acm_certificate" "redirect_mziabdoch" {
+  domain_name       = "ra.mziabdo.ch"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "mziabdoch_cert_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.redirect_mziabdoch.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.mziabdoch.zone_id
+}
+
+resource "aws_acm_certificate_validation" "redirect_mziabdoch" {
+  certificate_arn         = aws_acm_certificate.redirect_mziabdoch.arn
+  validation_record_fqdns = [for record in aws_route53_record.mziabdoch_cert_validation : record.fqdn]
+}
+
+resource "aws_s3_bucket" "redirect_mziabdoch" {
+  bucket = "ra.mziabdo.ch-redirect"
+}
+
+resource "aws_s3_bucket_website_configuration" "redirect_mziabdoch" {
+  bucket = aws_s3_bucket.redirect_mziabdoch.id
+
+  redirect_all_requests_to {
+    host_name = local.domain_name
+    protocol  = "https"
+  }
+}
+
+resource "aws_cloudfront_distribution" "redirect_mziabdoch" {
+  enabled     = true
+  aliases     = ["ra.mziabdo.ch"]
+  price_class = "PriceClass_100"
+
+  origin {
+    domain_name = aws_s3_bucket_website_configuration.redirect_mziabdoch.website_endpoint
+    origin_id   = "S3-redirect-mziabdoch"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "S3-redirect-mziabdoch"
+    viewer_protocol_policy = "allow-all"
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl     = 0
+    default_ttl = 86400
+    max_ttl     = 31536000
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = aws_acm_certificate_validation.redirect_mziabdoch.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  depends_on = [aws_acm_certificate_validation.redirect_mziabdoch]
+}
+
+resource "aws_route53_record" "redirect_mziabdoch" {
+  zone_id = data.aws_route53_zone.mziabdoch.zone_id
+  name    = "ra.mziabdo.ch"
+  type    = "A"
+
+  allow_overwrite = true
+
+  alias {
+    name                   = aws_cloudfront_distribution.redirect_mziabdoch.domain_name
+    zone_id                = aws_cloudfront_distribution.redirect_mziabdoch.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# ============================================================================
 # Outputs
 # ============================================================================
 
@@ -479,5 +707,17 @@ output "s3_bucket_name" {
 
 output "email_address" {
   value = "hello@${local.domain_name}"
+}
+
+output "ramblegate_url" {
+  value = "https://ramblegate.${local.domain_name}"
+}
+
+output "ramblegate_cloudfront_distribution_id" {
+  value = aws_cloudfront_distribution.ramblegate.id
+}
+
+output "ramblegate_s3_bucket_name" {
+  value = aws_s3_bucket.ramblegate.id
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { works } from '../data';
+import { works, gameDemos } from '../data';
 import { useStore } from '../store';
 
 // Track mix/embed opens
@@ -68,9 +68,7 @@ export default function Work() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         style={{
-                            borderBottom: index < works.length - 1 
-                                ? '1px solid rgba(0,0,0,0.08)' 
-                                : 'none',
+                            borderBottom: '1px solid rgba(0,0,0,0.08)',
                         }}
                     >
                         {/* Accordion Header */}
@@ -92,8 +90,8 @@ export default function Work() {
                     }}
                 >
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <h3 style={{ 
-                                    margin: 0, 
+                                <h3 style={{
+                                    margin: 0,
                                     fontSize: '1rem',
                                     fontWeight: '500',
                                     whiteSpace: 'nowrap',
@@ -102,18 +100,18 @@ export default function Work() {
                                 }}>
                         {work.title}
                                 </h3>
-                                <span style={{ 
-                                    fontSize: '0.75rem', 
+                                <span style={{
+                                    fontSize: '0.75rem',
                                     opacity: 0.5,
                                 }}>
                         {work.date}
                                 </span>
                             </div>
-                            
+
                             <motion.span
                                 animate={{ rotate: expandedId === work.id ? 180 : 0 }}
                                 transition={{ duration: 0.2 }}
-                                style={{ 
+                                style={{
                                     fontSize: '1.2rem',
                                     opacity: 0.5,
                                     marginLeft: '12px',
@@ -135,15 +133,15 @@ export default function Work() {
                                     style={{ overflow: 'hidden' }}
                         >
                                     <div style={{ padding: '0 20px 20px' }}>
-                                        <p style={{ 
-                                            fontSize: '0.85rem', 
-                                            opacity: 0.6, 
+                                        <p style={{
+                                            fontSize: '0.85rem',
+                                            opacity: 0.6,
                                             margin: '0 0 16px',
                                             lineHeight: 1.5
                                         }}>
                                             {work.subtitle}
                                         </p>
-                                        
+
                                         {work.youtubeId && (
                                             <div style={{
                                                 position: 'relative',
@@ -175,6 +173,83 @@ export default function Work() {
                         </AnimatePresence>
                 </motion.div>
             ))}
+
+            {/* Game Demos */}
+            {gameDemos.length > 0 && (
+                <>
+                    <div style={{
+                        padding: '20px 20px 8px',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        opacity: 0.4,
+                    }}>
+                        Game Demos
+                    </div>
+                    {gameDemos.map((demo, index) => (
+                        <motion.div
+                            key={demo.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: (works.length + index) * 0.05 }}
+                            style={{
+                                borderBottom: index < gameDemos.length - 1
+                                    ? '1px solid rgba(0,0,0,0.08)'
+                                    : 'none',
+                            }}
+                        >
+                            <motion.a
+                                href={demo.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                                style={{
+                                    width: '100%',
+                                    padding: '16px 20px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#1a1a1a',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    borderRadius: '8px',
+                                    textDecoration: 'none',
+                                }}
+                            >
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 style={{
+                                        margin: 0,
+                                        fontSize: '1rem',
+                                        fontWeight: '500',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}>
+                                        {demo.title}
+                                    </h3>
+                                    <span style={{
+                                        fontSize: '0.75rem',
+                                        opacity: 0.5,
+                                    }}>
+                                        {demo.subtitle}
+                                    </span>
+                                </div>
+                                <span style={{
+                                    fontSize: '0.9rem',
+                                    opacity: 0.4,
+                                    marginLeft: '12px',
+                                    flexShrink: 0,
+                                }}>
+                                    ↗
+                                </span>
+                            </motion.a>
+                        </motion.div>
+                    ))}
+                </>
+            )}
             </motion.div>
         </div>
     );

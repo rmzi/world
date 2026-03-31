@@ -119,6 +119,13 @@ export const releases = [
 
 export const works = [
     {
+        id: 12,
+        title: 'bodywerk with rmzi and just ross @TheLotRadio',
+        date: '2026-02-06',
+        subtitle: 'Memphis rap, club, misc — digging through records and tapes',
+        url: 'https://www.thelotradio.com/shows/special-guests/2026-02-06-1700',
+    },
+    {
         id: 0,
         title: 'rmzi // warm ambient blend // Steeped in Sound Volume 16',
         date: '2025-12-06',

@@ -91,6 +91,13 @@ export const works = [
         url: 'https://www.radioflouka.com/shows/the-crate-radio-w-dj-rmzi-04-07-2025',
     },
     {
+        id: 10,
+        title: 'Sorry Records with rmzi and Nick Boyd @TheLotRadio',
+        date: '2023-12-22',
+        subtitle: 'Sorry Records takeover @TheLotRadio',
+        youtubeId: 'ioe3sP5O6x0',
+    },
+    {
         id: 0,
         title: 'rmzi // warm ambient blend // Steeped in Sound Volume 16',
         date: '2025-12-06',

@@ -62,7 +62,23 @@ export const press = [
         source: 'WYXR 91.7 FM',
         url: 'https://wyxr.org/past-shows/',
     },
+    {
+        id: 'pr9',
+        title: 'A Convo w/ Dj Rmzi: How Ethiopian Music can Help The African Diaspora Decolonize Their Relationships',
+        source: 'Bartholomew Jones',
+        date: '2021-09-23',
+        url: 'https://www.youtube.com/watch?v=eBMTCVV734o',
+    },
 ];
+
+export const shows = {
+    upcoming: [
+        // { id: 'u1', title: 'Show Name', venue: 'Venue', date: '2026-04-15', url: 'https://...' },
+    ],
+    past: [
+        // { id: 'p1', title: 'Show Name', venue: 'Venue', date: '2026-03-01', url: 'https://...' },
+    ],
+};
 
 export const works = [
     {

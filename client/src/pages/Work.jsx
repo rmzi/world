@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { works, projects, press } from '../data';
+import { works, projects, press, shows } from '../data';
 import { useStore } from '../store';
 
 // Track mix/embed opens
@@ -305,6 +305,118 @@ export default function Work() {
                         </AnimatePresence>
                     </motion.div>
                 ))}
+
+                {/* Shows Section */}
+                {(shows.upcoming.length > 0 || shows.past.length > 0) && (
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                        {shows.upcoming.length > 0 && (
+                            <>
+                                <p style={{ ...sectionLabelStyle, paddingTop: '28px' }}>Upcoming Shows</p>
+                                {shows.upcoming.map((show, index) => (
+                                    <motion.div
+                                        key={show.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: (projects.length + 1 + works.length + index) * 0.05 }}
+                                        style={{
+                                            borderBottom: '1px solid rgba(0,0,0,0.08)',
+                                        }}
+                                    >
+                                        <motion.a
+                                            href={show.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => trackOutboundClick(show.url, show.title)}
+                                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                                            style={linkItemStyle}
+                                        >
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <h3 style={{
+                                                    margin: 0,
+                                                    fontSize: '1rem',
+                                                    fontWeight: '500',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}>
+                                                    {show.title}
+                                                </h3>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    opacity: 0.5,
+                                                }}>
+                                                    {show.venue}{show.date ? ` · ${show.date}` : ''}
+                                                </span>
+                                            </div>
+                                            <span style={{
+                                                fontSize: '0.85rem',
+                                                opacity: 0.4,
+                                                marginLeft: '12px',
+                                                flexShrink: 0,
+                                            }}>
+                                                &#x2197;
+                                            </span>
+                                        </motion.a>
+                                    </motion.div>
+                                ))}
+                            </>
+                        )}
+                        {shows.past.length > 0 && (
+                            <>
+                                <p style={{ ...sectionLabelStyle, paddingTop: shows.upcoming.length > 0 ? '12px' : '28px' }}>Past Shows</p>
+                                {shows.past.map((show, index) => (
+                                    <motion.div
+                                        key={show.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: (projects.length + 1 + works.length + shows.upcoming.length + index) * 0.05 }}
+                                        style={{
+                                            borderBottom: index < shows.past.length - 1
+                                                ? '1px solid rgba(0,0,0,0.08)'
+                                                : 'none',
+                                        }}
+                                    >
+                                        <motion.a
+                                            href={show.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            onClick={() => trackOutboundClick(show.url, show.title)}
+                                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                                            style={linkItemStyle}
+                                        >
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <h3 style={{
+                                                    margin: 0,
+                                                    fontSize: '1rem',
+                                                    fontWeight: '500',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}>
+                                                    {show.title}
+                                                </h3>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    opacity: 0.5,
+                                                }}>
+                                                    {show.venue}{show.date ? ` · ${show.date}` : ''}
+                                                </span>
+                                            </div>
+                                            <span style={{
+                                                fontSize: '0.85rem',
+                                                opacity: 0.4,
+                                                marginLeft: '12px',
+                                                flexShrink: 0,
+                                            }}>
+                                                &#x2197;
+                                            </span>
+                                        </motion.a>
+                                    </motion.div>
+                                ))}
+                            </>
+                        )}
+                    </div>
+                )}
 
                 {/* Press Section */}
                 <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>

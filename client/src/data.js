@@ -1,5 +1,83 @@
 // Static data for rmzi.world - no backend needed
 
+export const projects = [
+    {
+        id: 'p1',
+        title: '36247',
+        subtitle: 'Memphis Rap streaming service — 2,091 tracks, no tracking',
+        url: 'https://36247.rmzi.world',
+    },
+    {
+        id: 'p2',
+        title: 'Crate',
+        subtitle: 'Free-to-use music streaming platform',
+        url: 'https://crate.rmzi.world',
+    },
+    {
+        id: 'p3',
+        title: 'RambleGate Classique',
+        subtitle: 'A retro text-based adventure game',
+        url: 'https://ramblegate.rmzi.world',
+    },
+];
+
+export const press = [
+    {
+        id: 'pr1',
+        title: 'Are Hackathons Worth It? Five Participants Weigh In',
+        source: 'WNYC',
+        date: '2013-09-18',
+        url: 'https://www.wnycstudios.org/podcasts/notetoself/segments/are-hackathons-worth-it-five-participants-weigh',
+    },
+    {
+        id: 'pr2',
+        title: 'And the Winner of the First Ever Fashion Hackathon Is...',
+        source: 'Fashionista',
+        date: '2013-02-13',
+        url: 'https://fashionista.com/2013/02/and-the-winner-of-the-first-ever-fashion-hackathon-is',
+    },
+    {
+        id: 'pr3',
+        title: 'Fashion Hackathon Comes to NYFW',
+        source: 'WWD',
+        date: '2013-02-13',
+        url: 'https://wwd.com/fashion-news/fashion-scoops/feature/fashion-hackathon-comes-to-nyfw-6621485-450231/',
+    },
+    {
+        id: 'pr4',
+        title: 'Tech is the New Black: Decoded Fashion at Mercedes Benz Fashion Week',
+        source: 'AlleyWatch',
+        date: '2013-02-13',
+        url: 'https://www.alleywatch.com/2013/02/tech-is-the-new-black-decoded-fashion-at-mercedes-benz-fashion-week/',
+    },
+    {
+        id: 'pr5',
+        title: 'Music Hack Day NYC — Spotify V. Rdio',
+        source: 'Music Machinery',
+        date: '2013-10-21',
+        url: 'https://musicmachinery.com/2013/10/21/music-hack-day-nyc/',
+    },
+    {
+        id: 'pr6',
+        title: 'Bodywerk Memphis: DJ Superteam Making Waves',
+        source: 'We Are Memphis',
+        url: 'https://wearememphis.com/play/music/musician-profiles/bodywerk-memphis-dj-superteam/',
+    },
+    {
+        id: 'pr7',
+        title: 'Ep. 23: Bodywerk',
+        source: 'The Shellcast: Only In Memphis',
+        date: '2022-03-10',
+        url: 'https://podcasts.apple.com/us/podcast/ep-23-bodywerk/id1558176971?i=1000553643095',
+    },
+    {
+        id: 'pr8',
+        title: 'HabibiBeats Radio',
+        source: 'WYXR 91.7 FM',
+        url: 'https://wyxr.org/past-shows/',
+    },
+];
+
 export const works = [
     {
         id: 0,
@@ -63,15 +141,6 @@ export const works = [
         date: '2025-08-08',
         subtitle: 'dj blingg, stephany medina, justross and rmzi @TheLotRadio',
         youtubeId: 'WPxHxoe0Ygo',
-    },
-];
-
-export const gameDemos = [
-    {
-        id: 'ramblegate',
-        title: 'RambleGate Classique',
-        subtitle: 'A retro text-based adventure game',
-        url: 'https://ramblegate.rmzi.world',
     },
 ];
 

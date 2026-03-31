@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Work from '../pages/Work';
 import Self from '../pages/Self';
 import Connect from '../pages/Connect';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // Track UI interactions
 const trackInteraction = (action) => {
@@ -15,153 +15,93 @@ const trackInteraction = (action) => {
 };
 
 export default function Overlay() {
-    const { isPaused, togglePause, setPaused, setSceneState, activePage, setActivePage, randomizeParams, scatter, hasEntered, enter, audioLevel, signalActive, toggleSignal } = useStore();
+    const {
+        activePage, setActivePage,
+        sceneState, setSceneState,
+        hasEntered, enter,
+        audioLevel, signalActive, toggleSignal,
+        randomizeParams, scatter,
+        enterHarp, exitHarp,
+    } = useStore();
+
     const [isExpanded, setIsExpanded] = useState(false);
-    const [idleHint, setIdleHint] = useState(null); // 'drag to play', 'explore'
-    const [lastInteraction, setLastInteraction] = useState(Date.now());
-    const [interactionCount, setInteractionCount] = useState(0);
 
     const premiumEasing = [0.23, 1, 0.32, 1];
 
     const handleNav = (page) => {
-        setPaused(false);
         setActivePage(page);
-        setIsExpanded(false);
-
-        if (page === 'work') {
-            setSceneState('offscreen');
-        } else if (page === 'self') {
+        if (page === 'self') {
             setSceneState('self-cloud');
-        } else if (page === 'connect') {
+        } else {
             setSceneState('offscreen');
         }
     };
 
     const handleBack = () => {
-        setActivePage(null);
-        setSceneState('sphere');
-        setPaused(false);
-    };
-
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e) => {
-        const { clientWidth, clientHeight } = e.currentTarget;
-        const x = (e.clientX / clientWidth - 0.5) * 2;
-        const y = (e.clientY / clientHeight - 0.5) * 2;
-        setMousePos({ x, y });
+        if (sceneState === 'harp') {
+            // Return from harp to Work page
+            exitHarp();
+        } else {
+            // Return to home menu
+            setActivePage(null);
+            setSceneState('home');
+        }
     };
 
     const [showPrompt, setShowPrompt] = useState(false);
 
-    // Idle timer for "enter" prompt
-    useEffect(() => {
-        if (!hasEntered) {
-            const timer = setTimeout(() => setShowPrompt(true), 1500);
-            return () => clearTimeout(timer);
-        }
-    }, [hasEntered]);
-
-    // Track interactions and reset idle timer
-    useEffect(() => {
-        const resetIdle = () => {
-            setLastInteraction(Date.now());
-            setIdleHint(null);
-            setInteractionCount(c => c + 1);
-        };
-        
-        const events = ['pointerdown', 'pointermove', 'keydown', 'scroll'];
-        events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
-        return () => events.forEach(e => window.removeEventListener(e, resetIdle));
-    }, []);
-
-    // Show simple idle hint after 4s (but only once per session)
-    useEffect(() => {
-        if (!hasEntered || activePage || interactionCount > 3) return;
-        
-        const timer = setTimeout(() => {
-            if (!idleHint) {
-                setIdleHint('drag to play');
-            }
-        }, 4000);
-        
-        return () => clearTimeout(timer);
-    }, [hasEntered, activePage, interactionCount]);
-
     return (
-        <div
-            onMouseMove={handleMouseMove}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-        >
-            {/* Idle Hint - simple text that fades in/out once */}
-            <AnimatePresence>
-                {idleHint && hasEntered && !activePage && !isPaused && (
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.5 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5 }}
-                        style={{
-                            position: 'fixed',
-                            bottom: '25%',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            fontSize: '0.7rem',
-                            fontWeight: '300',
-                            letterSpacing: '0.2em',
-                            color: 'rgba(0,0,0,0.5)',
-                                        textTransform: 'lowercase',
-                            pointerEvents: 'none',
-                            zIndex: 5,
-                                    }}
-                                >
-                        {idleHint}
-                                </motion.p>
-                )}
-            </AnimatePresence>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
 
-            {/* 2. Dimming Overlay when Paused */}
+            {/* Home Menu — front-and-center after entering */}
             <AnimatePresence>
-                {isPaused && hasEntered && (
+                {hasEntered && activePage === null && sceneState !== 'sphere' && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.8, ease: premiumEasing }}
-                        style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', pointerEvents: 'auto', zIndex: 10 }}
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '1.2rem',
+                            pointerEvents: 'auto',
+                            zIndex: 10,
+                        }}
                     >
-                        {!activePage && (
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                height: '100%',
-                                gap: '1.2rem'
-                            }}>
-                                {['Self', 'Work', 'Connect'].map((item, i) => (
-                                    <motion.h2
-                                        key={item}
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.08, duration: 0.3 }}
-                                        whileHover={{ scale: 1.05, color: '#ff4081' }}
-                                        whileTap={{ scale: 0.98 }}
-                                        style={{ fontSize: '1.8rem', cursor: 'pointer', margin: 0, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#1a1a1a', fontWeight: '400' }}
-                                        onClick={() => handleNav(item.toLowerCase())}
-                                    >
-                                        {item}
-                                    </motion.h2>
-                                ))}
-                            </div>
-                        )}
+                        {['Self', 'Work', 'Connect'].map((item, i) => (
+                            <motion.h2
+                                key={item}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 + i * 0.1, duration: 0.5, ease: premiumEasing }}
+                                whileHover={{ scale: 1.05, color: '#ff4081' }}
+                                whileTap={{ scale: 0.98 }}
+                                style={{
+                                    fontSize: '1.8rem',
+                                    cursor: 'pointer',
+                                    margin: 0,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.15em',
+                                    color: '#1a1a1a',
+                                    fontWeight: '400',
+                                }}
+                                onClick={() => handleNav(item.toLowerCase())}
+                            >
+                                {item}
+                            </motion.h2>
+                        ))}
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* 3. UI Floating Dock */}
+            {/* Harp Controls — floating dock when in harp mode */}
             <AnimatePresence>
-                {hasEntered && !activePage && (
+                {hasEntered && activePage === 'harp' && (
                     <motion.div
                         initial={{ opacity: 0, y: 30, x: '-50%' }}
                         animate={{ opacity: 1, y: 0, x: '-50%' }}
@@ -183,7 +123,6 @@ export default function Overlay() {
                             className="glass"
                             layout
                             animate={{
-                                // Green (low) → Yellow (mid) → Red (hot)
                                 backgroundColor: `rgba(${Math.floor(80 + audioLevel * 175)}, ${Math.floor(180 - audioLevel * 130)}, ${Math.floor(80 - audioLevel * 60)}, ${0.75 + audioLevel * 0.2})`,
                                 boxShadow: `0 4px ${10 + audioLevel * 20}px rgba(${Math.floor(audioLevel * 200)}, ${Math.floor(150 - audioLevel * 100)}, 0, ${0.1 + audioLevel * 0.3})`
                             }}
@@ -200,14 +139,14 @@ export default function Overlay() {
                             <motion.button
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={(e) => { e.stopPropagation(); togglePause(); }}
+                                onClick={(e) => { e.stopPropagation(); handleBack(); }}
                                 style={{
                                     fontSize: '0.6rem',
                                     padding: '7px 16px',
                                     borderRadius: '20px',
                                     border: 'none',
-                                    background: isPaused ? '#1a1a1a' : 'rgba(0,0,0,0.06)',
-                                    color: isPaused ? 'white' : '#1a1a1a',
+                                    background: 'rgba(0,0,0,0.06)',
+                                    color: '#1a1a1a',
                                     fontWeight: 'bold',
                                     textTransform: 'uppercase',
                                     transition: 'all 0.3s ease',
@@ -215,7 +154,7 @@ export default function Overlay() {
                                     flexShrink: 0
                                 }}
                             >
-                                {isPaused ? 'Resume' : 'Explore'}
+                                &larr; Back
                             </motion.button>
 
                             <motion.button
@@ -290,14 +229,14 @@ export default function Overlay() {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={(e) => { e.stopPropagation(); toggleSignal(); trackInteraction('signal_toggle'); }}
                                             animate={{
-                                                background: signalActive 
+                                                background: signalActive
                                                     ? ['rgba(255,100,100,0.8)', 'rgba(255,50,50,0.9)', 'rgba(255,100,100,0.8)']
                                                     : 'rgba(0,0,0,0.03)',
-                                                boxShadow: signalActive 
+                                                boxShadow: signalActive
                                                     ? '0 0 8px rgba(255,50,50,0.5)'
                                                     : '0 0 0px rgba(0,0,0,0)'
                                             }}
-                                            transition={{ 
+                                            transition={{
                                                 background: { duration: 1, repeat: signalActive ? Infinity : 0 },
                                                 boxShadow: { duration: 0.3 }
                                             }}
@@ -313,7 +252,7 @@ export default function Overlay() {
                                                 whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            📡 Signal
+                                            Signal
                                         </motion.button>
                                     </motion.div>
                                 )}
@@ -323,10 +262,11 @@ export default function Overlay() {
                 )}
             </AnimatePresence>
 
-            {/* 4. Content Pages */}
+            {/* Content Pages */}
             <AnimatePresence>
-                {(activePage === 'work' || activePage === 'self' || activePage === 'connect') && hasEntered && (
+                {hasEntered && activePage && activePage !== 'harp' && (
                     <motion.div
+                        key={activePage}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}

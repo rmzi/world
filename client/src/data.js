@@ -74,11 +74,11 @@ export const press = [
 export const shows = {
     upcoming: [],
     past: [
-        { id: 's1', title: 'Solidarity with Lebanon: Aleister, rmzi b2b dj 5spice, Kaili, Marios b2b Statice', venue: 'Mood Ring, NYC', date: '2026-03-26', url: 'https://ra.co/events/2156553' },
-        { id: 's2', title: 'LISTENING SESSION: Decomposition with rmzi', venue: 'Silence Please, NYC', date: '2026-03-08' },
-        { id: 's3', title: 'bodywerk x potluck presents BODYLUCK', venue: 'Mood Ring, NYC', date: '2026-01-09' },
-        { id: 's4', title: 'Happy Hour: The Unction with rmzi, Aleister, and theoretic', venue: 'Bossa Nova Civic Club, NYC', date: '2025-12-03' },
-        { id: 's5', title: 'Morphism: Takuya Nakamura, DJ Chaotic Ugly, rmzi x DJ BLINGG, J.N.R x Aleister', venue: 'TV EYE, NYC', date: '2025-09-12' },
+        { id: 's1', title: 'Solidarity with Lebanon: Aleister, rmzi b2b dj 5spice, Kaili, Marios b2b Statice', venue: 'Mood Ring, NYC', date: '2026-03-26', url: 'https://ra.co/events/2399630' },
+        { id: 's2', title: 'LISTENING SESSION: Decomposition with rmzi', venue: 'Silence Please, NYC', date: '2026-03-08', url: 'https://ra.co/events/2369779' },
+        { id: 's3', title: 'bodywerk x potluck presents BODYLUCK', venue: 'Mood Ring, NYC', date: '2026-01-09', url: 'https://ra.co/events/2309430' },
+        { id: 's4', title: 'Happy Hour: The Unction with rmzi, Aleister, and theoretic', venue: 'Bossa Nova Civic Club, NYC', date: '2025-12-03', url: 'https://ra.co/events/2315705' },
+        { id: 's5', title: 'Morphism: Takuya Nakamura, DJ Chaotic Ugly, rmzi x DJ BLINGG, J.N.R x Aleister', venue: 'TV EYE, NYC', date: '2025-09-12', url: 'https://ra.co/events/2236722' },
     ],
 };
 

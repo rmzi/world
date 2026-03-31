@@ -101,20 +101,6 @@ export const releases = [
 
 export const works = [
     {
-        id: 9,
-        title: 'The Crate Radio w/ DJ RMZI',
-        date: '2025-07-04',
-        subtitle: 'Eclectic mix on Radio Flouka from Dubai',
-        url: 'https://www.radioflouka.com/shows/the-crate-radio-w-dj-rmzi-04-07-2025',
-    },
-    {
-        id: 10,
-        title: 'Sorry Records with rmzi and Nick Boyd @TheLotRadio',
-        date: '2023-12-22',
-        subtitle: 'Sorry Records takeover @TheLotRadio',
-        youtubeId: 'ioe3sP5O6x0',
-    },
-    {
         id: 0,
         title: 'rmzi // warm ambient blend // Steeped in Sound Volume 16',
         date: '2025-12-06',
@@ -129,11 +115,25 @@ export const works = [
         youtubeId: '3fcc1e_kq-4',
     },
     {
-        id: 2,
-        title: 'A SOUND PLACE: New Mombasa',
-        date: '2023-08-13',
-        subtitle: 'Boo Lean b2b RMZI @TheLotRadio',
-        youtubeId: '944TX7IRjSE',
+        id: 8,
+        title: 'BODYWERK RETURNS',
+        date: '2025-08-08',
+        subtitle: 'dj blingg, stephany medina, justross and rmzi @TheLotRadio',
+        youtubeId: 'WPxHxoe0Ygo',
+    },
+    {
+        id: 9,
+        title: 'The Crate Radio w/ DJ RMZI',
+        date: '2025-07-04',
+        subtitle: 'Eclectic mix on Radio Flouka from Dubai',
+        url: 'https://www.radioflouka.com/shows/the-crate-radio-w-dj-rmzi-04-07-2025',
+    },
+    {
+        id: 5,
+        title: 'bodywerk with rmzi',
+        date: '2024-09-02',
+        subtitle: 'Cross-genre varietals from Dubai to BK @TheLotRadio',
+        youtubeId: 'qqMRYyAUVIQ',
     },
     {
         id: 3,
@@ -143,18 +143,32 @@ export const works = [
         youtubeId: 'P3Hpv6H38OI',
     },
     {
+        id: 10,
+        title: 'Sorry Records with rmzi and Nick Boyd @TheLotRadio',
+        date: '2023-12-22',
+        subtitle: 'Sorry Records takeover @TheLotRadio',
+        youtubeId: 'ioe3sP5O6x0',
+    },
+    {
+        id: 2,
+        title: 'A SOUND PLACE: New Mombasa',
+        date: '2023-08-13',
+        subtitle: 'Boo Lean b2b RMZI @TheLotRadio',
+        youtubeId: '944TX7IRjSE',
+    },
+    {
+        id: 7,
+        title: 'bodywerk with rmzi',
+        date: '2023-05-29',
+        subtitle: 'Amorphous audio experience @TheLotRadio',
+        youtubeId: 'FLk5MSELFpk',
+    },
+    {
         id: 4,
         title: 'Bodywerk takeover with Rmzi',
         date: '2023-01-13',
         subtitle: 'Taking over for Dj Manny @TheLotRadio',
         youtubeId: 'LNo_XsvXDzs',
-    },
-    {
-        id: 5,
-        title: 'bodywerk with rmzi',
-        date: '2024-09-02',
-        subtitle: 'Cross-genre varietals from Dubai to BK @TheLotRadio',
-        youtubeId: 'qqMRYyAUVIQ',
     },
     {
         id: 11,
@@ -169,20 +183,6 @@ export const works = [
         date: '2021-11-20',
         subtitle: '@ The Lot Radio',
         youtubeId: 'bxMMMzNjUD8',
-    },
-    {
-        id: 7,
-        title: 'bodywerk with rmzi',
-        date: '2023-05-29',
-        subtitle: 'Amorphous audio experience @TheLotRadio',
-        youtubeId: 'FLk5MSELFpk',
-    },
-    {
-        id: 8,
-        title: 'BODYWERK RETURNS',
-        date: '2025-08-08',
-        subtitle: 'dj blingg, stephany medina, justross and rmzi @TheLotRadio',
-        youtubeId: 'WPxHxoe0Ygo',
     },
 ];
 

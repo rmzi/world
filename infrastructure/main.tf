@@ -451,7 +451,7 @@ resource "aws_ses_active_receipt_rule_set" "main" {
 resource "aws_ses_receipt_rule" "store" {
   name          = "store-and-forward"
   rule_set_name = aws_ses_receipt_rule_set.main.rule_set_name
-  recipients    = ["hello@${local.domain_name}"]
+  recipients    = ["hello@${local.domain_name}", "r@mziabdo.ch"]
   enabled       = true
   scan_enabled  = true
 
@@ -687,6 +687,23 @@ resource "aws_route53_record" "redirect_mziabdoch" {
     zone_id                = aws_cloudfront_distribution.redirect_mziabdoch.hosted_zone_id
     evaluate_target_health = false
   }
+}
+
+# ============================================================================
+# Email forwarding for r@mziabdo.ch
+# ============================================================================
+
+data "aws_route53_zone" "mziabdoch_parent" {
+  name         = "mziabdo.ch"
+  private_zone = false
+}
+
+resource "aws_route53_record" "mziabdoch_mx" {
+  zone_id = data.aws_route53_zone.mziabdoch_parent.zone_id
+  name    = "mziabdo.ch"
+  type    = "MX"
+  ttl     = 600
+  records = ["10 inbound-smtp.us-east-1.amazonaws.com"]
 }
 
 # ============================================================================

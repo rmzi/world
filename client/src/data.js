@@ -90,6 +90,13 @@ export const releases = [
         date: '2025-11-20',
         url: 'https://soundcloud.com/djaleister/rmzi-aleister-unconscious-state-of-mind-7',
     },
+    {
+        id: 'r2',
+        title: 'WERK002',
+        artist: 'rmzi',
+        date: '2023-03-17',
+        url: 'https://bodywerk.bandcamp.com/album/werk002-2',
+    },
 ];
 
 export const works = [

@@ -37,20 +37,6 @@ export const press = [
         url: 'https://fashionista.com/2013/02/and-the-winner-of-the-first-ever-fashion-hackathon-is',
     },
     {
-        id: 'pr3',
-        title: 'Fashion Hackathon Comes to NYFW',
-        source: 'WWD',
-        date: '2013-02-13',
-        url: 'https://wwd.com/fashion-news/fashion-scoops/feature/fashion-hackathon-comes-to-nyfw-6621485-450231/',
-    },
-    {
-        id: 'pr4',
-        title: 'Tech is the New Black: Decoded Fashion at Mercedes Benz Fashion Week',
-        source: 'AlleyWatch',
-        date: '2013-02-13',
-        url: 'https://www.alleywatch.com/2013/02/tech-is-the-new-black-decoded-fashion-at-mercedes-benz-fashion-week/',
-    },
-    {
         id: 'pr5',
         title: 'Music Hack Day NYC — Spotify V. Rdio',
         source: 'Music Machinery',

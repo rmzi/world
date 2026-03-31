@@ -72,15 +72,24 @@ export const press = [
 ];
 
 export const shows = {
-    upcoming: [
-        // { id: 'u1', title: 'Show Name', venue: 'Venue', date: '2026-04-15', url: 'https://...' },
-    ],
+    upcoming: [],
     past: [
-        // { id: 'p1', title: 'Show Name', venue: 'Venue', date: '2026-03-01', url: 'https://...' },
+        { id: 's1', title: 'Solidarity with Lebanon: Aleister, rmzi b2b dj 5spice, Kaili, Marios b2b Statice', venue: 'Mood Ring, NYC', date: '2026-03-26', url: 'https://ra.co/events/2156553' },
+        { id: 's2', title: 'LISTENING SESSION: Decomposition with rmzi', venue: 'Silence Please, NYC', date: '2026-03-08' },
+        { id: 's3', title: 'bodywerk x potluck presents BODYLUCK', venue: 'Mood Ring, NYC', date: '2026-01-09' },
+        { id: 's4', title: 'Happy Hour: The Unction with rmzi, Aleister, and theoretic', venue: 'Bossa Nova Civic Club, NYC', date: '2025-12-03' },
+        { id: 's5', title: 'Morphism: Takuya Nakamura, DJ Chaotic Ugly, rmzi x DJ BLINGG, J.N.R x Aleister', venue: 'TV EYE, NYC', date: '2025-09-12' },
     ],
 };
 
 export const works = [
+    {
+        id: 9,
+        title: 'The Crate Radio w/ DJ RMZI',
+        date: '2025-07-04',
+        subtitle: 'Eclectic mix on Radio Flouka from Dubai',
+        url: 'https://www.radioflouka.com/shows/the-crate-radio-w-dj-rmzi-04-07-2025',
+    },
     {
         id: 0,
         title: 'rmzi // warm ambient blend // Steeped in Sound Volume 16',

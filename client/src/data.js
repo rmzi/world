@@ -82,6 +82,16 @@ export const shows = {
     ],
 };
 
+export const releases = [
+    {
+        id: 'r1',
+        title: 'Unconscious State of Mind',
+        artist: 'RMZI & Aleister',
+        date: '2025-11-20',
+        url: 'https://soundcloud.com/djaleister/rmzi-aleister-unconscious-state-of-mind-7',
+    },
+];
+
 export const works = [
     {
         id: 9,
@@ -138,6 +148,13 @@ export const works = [
         date: '2024-09-02',
         subtitle: 'Cross-genre varietals from Dubai to BK @TheLotRadio',
         youtubeId: 'qqMRYyAUVIQ',
+    },
+    {
+        id: 11,
+        title: 'bodywerk with DJ RMZI, DJ ChandlerBlingg, and Niyah West',
+        date: '2022-08-02',
+        subtitle: '@TheLotRadio',
+        url: 'https://soundcloud.com/thelotradio/bodywerk-with-dj-rmzi-dj-chandlerblingg-and-niyah-west-the-lot-radio-08-02-2022',
     },
     {
         id: 6,

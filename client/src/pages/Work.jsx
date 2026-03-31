@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { works, projects, press, shows } from '../data';
+import { works, projects, press, shows, releases } from '../data';
 import { useStore } from '../store';
 
 // Track mix/embed opens
@@ -454,6 +454,61 @@ export default function Work() {
                                 ))}
                             </>
                         )}
+                    </div>
+                )}
+
+                {/* Releases Section */}
+                {releases.length > 0 && (
+                    <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                        <p style={{ ...sectionLabelStyle, paddingTop: '28px' }}>Releases</p>
+                        {releases.map((release, index) => (
+                            <motion.div
+                                key={release.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                style={{
+                                    borderBottom: index < releases.length - 1
+                                        ? '1px solid rgba(0,0,0,0.08)'
+                                        : 'none',
+                                }}
+                            >
+                                <motion.a
+                                    href={release.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => trackOutboundClick(release.url, release.title)}
+                                    whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+                                    style={linkItemStyle}
+                                >
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <h3 style={{
+                                            margin: 0,
+                                            fontSize: '1rem',
+                                            fontWeight: '500',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        }}>
+                                            {release.title}
+                                        </h3>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            opacity: 0.5,
+                                        }}>
+                                            {release.artist}{release.date ? ` · ${release.date}` : ''}
+                                        </span>
+                                    </div>
+                                    <span style={{
+                                        fontSize: '0.85rem',
+                                        opacity: 0.4,
+                                        marginLeft: '12px',
+                                        flexShrink: 0,
+                                    }}>
+                                        &#x2197;
+                                    </span>
+                                </motion.a>
+                            </motion.div>
+                        ))}
                     </div>
                 )}
 

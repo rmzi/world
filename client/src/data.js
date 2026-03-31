@@ -69,6 +69,13 @@ export const press = [
         date: '2021-09-23',
         url: 'https://www.youtube.com/watch?v=eBMTCVV734o',
     },
+    {
+        id: 'pr10',
+        title: 'Ramzi Abdoch — SharpSports.io — Memphis, TN',
+        source: 'Apple Podcasts',
+        date: '2020-11-19',
+        url: 'https://podcasts.apple.com/gb/podcast/ramzi-abdoch-sharpsports-io-memphis-tn/id1511416761?i=1000499942901',
+    },
 ];
 
 export const shows = {
@@ -79,6 +86,11 @@ export const shows = {
         { id: 's3', title: 'bodywerk x potluck presents BODYLUCK', venue: 'Mood Ring, NYC', date: '2026-01-09', url: 'https://ra.co/events/2309430' },
         { id: 's4', title: 'Happy Hour: The Unction with rmzi, Aleister, and theoretic', venue: 'Bossa Nova Civic Club, NYC', date: '2025-12-03', url: 'https://ra.co/events/2315705' },
         { id: 's5', title: 'Morphism: Takuya Nakamura, DJ Chaotic Ugly, rmzi x DJ BLINGG, J.N.R x Aleister', venue: 'TV EYE, NYC', date: '2025-09-12', url: 'https://ra.co/events/2236722' },
+        { id: 's6', title: 'Studio Celosia presents rmzi, Love Higher, mausam, Statice', venue: 'Mood Ring, NYC', date: '2025-09-04', url: 'https://ra.co/events/2241393' },
+        { id: 's7', title: 'Bodywerk 4 Year Anniversary', venue: 'Earthly Delights, NYC', date: '2025-08-14', url: 'https://ra.co/events/2233532' },
+        { id: 's8', title: 'potluck with DJ Fat Frog, Loqum, BABEITSPURR, dj 5spice, rmzi, c:j', venue: 'Mood Ring, NYC', date: '2025-07-26', url: 'https://ra.co/events/2196748' },
+        { id: 's9', title: 'HAPPY HOUR: rmzi (bodywerk) & Just Ross', venue: 'Earthly Delights, NYC', date: '2025-04-06', url: 'https://ra.co/events/2138715' },
+        { id: 's10', title: 'Vinyl Souk x FAM at One Central', venue: 'Monkey Bar Dubai One Central, Dubai', date: '2025-02-01', url: 'https://ra.co/events/2091246' },
     ],
 };
 
@@ -96,6 +108,12 @@ export const releases = [
         artist: 'rmzi',
         date: '2023-03-17',
         url: 'https://bodywerk.bandcamp.com/album/werk002-2',
+    },
+    {
+        id: 'r3',
+        title: 'WERK001: From Memphis With Love',
+        artist: 'bodywerk',
+        url: 'https://bodywerk.bandcamp.com/album/werk001-from-memphis-with-love',
     },
 ];
 

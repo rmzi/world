@@ -34,12 +34,34 @@ const sectionLabelStyle = {
     margin: 0,
 };
 
+const Favicon = ({ url }) => {
+    if (!url) return null;
+    try {
+        const domain = new URL(url).hostname;
+        return (
+            <img
+                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                alt=""
+                style={{
+                    width: 16,
+                    height: 16,
+                    marginRight: 12,
+                    flexShrink: 0,
+                    borderRadius: 2,
+                    opacity: 0.6,
+                }}
+            />
+        );
+    } catch {
+        return null;
+    }
+};
+
 const linkItemStyle = {
     width: '100%',
     padding: '16px 20px',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
     background: 'transparent',
     border: 'none',
     color: '#1a1a1a',
@@ -47,7 +69,46 @@ const linkItemStyle = {
     textAlign: 'left',
     borderRadius: '8px',
     textDecoration: 'none',
+    gap: '12px',
 };
+
+const LinkItem = ({ url, title, subtitle, onClick }) => (
+    <motion.a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+        whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
+        style={linkItemStyle}
+    >
+        <Favicon url={url} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{
+                margin: 0,
+                fontSize: '1rem',
+                fontWeight: '500',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+            }}>
+                {title}
+            </h3>
+            <span style={{
+                fontSize: '0.75rem',
+                opacity: 0.5,
+            }}>
+                {subtitle}
+            </span>
+        </div>
+        <span style={{
+            fontSize: '0.85rem',
+            opacity: 0.4,
+            flexShrink: 0,
+        }}>
+            &#x2197;
+        </span>
+    </motion.a>
+);
 
 export default function Work() {
     const [expandedId, setExpandedId] = useState(null);
@@ -66,8 +127,6 @@ export default function Work() {
         setEmbedOpen(expandedId !== null);
         return () => setEmbedOpen(false); // Cleanup when leaving page
     }, [expandedId, setEmbedOpen]);
-
-    let itemIndex = 0;
 
     return (
         <div style={{
@@ -107,45 +166,14 @@ export default function Work() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        style={{
-                            borderBottom: '1px solid rgba(0,0,0,0.08)',
-                        }}
+                        style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
                     >
-                        <motion.a
-                            href={project.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <LinkItem
+                            url={project.url}
+                            title={project.title}
+                            subtitle={project.subtitle}
                             onClick={() => trackOutboundClick(project.url, project.title)}
-                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                            style={linkItemStyle}
-                        >
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <h3 style={{
-                                    margin: 0,
-                                    fontSize: '1rem',
-                                    fontWeight: '500',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                }}>
-                                    {project.title}
-                                </h3>
-                                <span style={{
-                                    fontSize: '0.75rem',
-                                    opacity: 0.5,
-                                }}>
-                                    {project.subtitle}
-                                </span>
-                            </div>
-                            <span style={{
-                                fontSize: '0.85rem',
-                                opacity: 0.4,
-                                marginLeft: '12px',
-                                flexShrink: 0,
-                            }}>
-                                &#x2197;
-                            </span>
-                        </motion.a>
+                        />
                     </motion.div>
                 ))}
 
@@ -154,9 +182,7 @@ export default function Work() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: projects.length * 0.05 }}
-                    style={{
-                        borderBottom: '1px solid rgba(0,0,0,0.08)',
-                    }}
+                    style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
                 >
                     <motion.button
                         onClick={() => enterHarp()}
@@ -181,7 +207,6 @@ export default function Work() {
                         <span style={{
                             fontSize: '0.85rem',
                             opacity: 0.4,
-                            marginLeft: '12px',
                             flexShrink: 0,
                         }}>
                             &#x2192;
@@ -214,15 +239,16 @@ export default function Work() {
                                         padding: '16px 20px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'space-between',
                                         background: 'transparent',
                                         border: 'none',
                                         color: '#1a1a1a',
                                         cursor: 'pointer',
                                         textAlign: 'left',
                                         borderRadius: '8px',
+                                        gap: '12px',
                                     }}
                                 >
+                                    <Favicon url={`https://www.youtube.com/watch?v=${work.youtubeId}`} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <h3 style={{
                                             margin: 0,
@@ -238,7 +264,7 @@ export default function Work() {
                                             fontSize: '0.75rem',
                                             opacity: 0.5,
                                         }}>
-                                            {work.date}
+                                            {work.subtitle}{work.date ? ` · ${work.date}` : ''}
                                         </span>
                                     </div>
 
@@ -248,7 +274,6 @@ export default function Work() {
                                         style={{
                                             fontSize: '1.2rem',
                                             opacity: 0.5,
-                                            marginLeft: '12px',
                                             flexShrink: 0,
                                         }}
                                     >
@@ -305,42 +330,12 @@ export default function Work() {
                                 </AnimatePresence>
                             </>
                         ) : (
-                            /* Link-only mix (no YouTube embed) */
-                            <motion.a
-                                href={work.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <LinkItem
+                                url={work.url}
+                                title={work.title}
+                                subtitle={`${work.subtitle}${work.date ? ` · ${work.date}` : ''}`}
                                 onClick={() => trackOutboundClick(work.url, work.title)}
-                                whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                                style={linkItemStyle}
-                            >
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <h3 style={{
-                                        margin: 0,
-                                        fontSize: '1rem',
-                                        fontWeight: '500',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}>
-                                        {work.title}
-                                    </h3>
-                                    <span style={{
-                                        fontSize: '0.75rem',
-                                        opacity: 0.5,
-                                    }}>
-                                        {work.subtitle}{work.date ? ` · ${work.date}` : ''}
-                                    </span>
-                                </div>
-                                <span style={{
-                                    fontSize: '0.85rem',
-                                    opacity: 0.4,
-                                    marginLeft: '12px',
-                                    flexShrink: 0,
-                                }}>
-                                    &#x2197;
-                                </span>
-                            </motion.a>
+                            />
                         )}
                     </motion.div>
                 ))}
@@ -356,46 +351,14 @@ export default function Work() {
                                         key={show.id}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: (projects.length + 1 + works.length + index) * 0.05 }}
-                                        style={{
-                                            borderBottom: '1px solid rgba(0,0,0,0.08)',
-                                        }}
+                                        style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}
                                     >
-                                        <motion.a
-                                            href={show.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <LinkItem
+                                            url={show.url}
+                                            title={show.title}
+                                            subtitle={`${show.venue}${show.date ? ` · ${show.date}` : ''}`}
                                             onClick={() => trackOutboundClick(show.url, show.title)}
-                                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                                            style={linkItemStyle}
-                                        >
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <h3 style={{
-                                                    margin: 0,
-                                                    fontSize: '1rem',
-                                                    fontWeight: '500',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                }}>
-                                                    {show.title}
-                                                </h3>
-                                                <span style={{
-                                                    fontSize: '0.75rem',
-                                                    opacity: 0.5,
-                                                }}>
-                                                    {show.venue}{show.date ? ` · ${show.date}` : ''}
-                                                </span>
-                                            </div>
-                                            <span style={{
-                                                fontSize: '0.85rem',
-                                                opacity: 0.4,
-                                                marginLeft: '12px',
-                                                flexShrink: 0,
-                                            }}>
-                                                &#x2197;
-                                            </span>
-                                        </motion.a>
+                                        />
                                     </motion.div>
                                 ))}
                             </>
@@ -408,48 +371,18 @@ export default function Work() {
                                         key={show.id}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: (projects.length + 1 + works.length + shows.upcoming.length + index) * 0.05 }}
                                         style={{
                                             borderBottom: index < shows.past.length - 1
                                                 ? '1px solid rgba(0,0,0,0.08)'
                                                 : 'none',
                                         }}
                                     >
-                                        <motion.a
-                                            href={show.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
+                                        <LinkItem
+                                            url={show.url}
+                                            title={show.title}
+                                            subtitle={`${show.venue}${show.date ? ` · ${show.date}` : ''}`}
                                             onClick={() => trackOutboundClick(show.url, show.title)}
-                                            whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                                            style={linkItemStyle}
-                                        >
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <h3 style={{
-                                                    margin: 0,
-                                                    fontSize: '1rem',
-                                                    fontWeight: '500',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                }}>
-                                                    {show.title}
-                                                </h3>
-                                                <span style={{
-                                                    fontSize: '0.75rem',
-                                                    opacity: 0.5,
-                                                }}>
-                                                    {show.venue}{show.date ? ` · ${show.date}` : ''}
-                                                </span>
-                                            </div>
-                                            <span style={{
-                                                fontSize: '0.85rem',
-                                                opacity: 0.4,
-                                                marginLeft: '12px',
-                                                flexShrink: 0,
-                                            }}>
-                                                &#x2197;
-                                            </span>
-                                        </motion.a>
+                                        />
                                     </motion.div>
                                 ))}
                             </>
@@ -472,41 +405,12 @@ export default function Work() {
                                         : 'none',
                                 }}
                             >
-                                <motion.a
-                                    href={release.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <LinkItem
+                                    url={release.url}
+                                    title={release.title}
+                                    subtitle={`${release.artist}${release.date ? ` · ${release.date}` : ''}`}
                                     onClick={() => trackOutboundClick(release.url, release.title)}
-                                    whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                                    style={linkItemStyle}
-                                >
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <h3 style={{
-                                            margin: 0,
-                                            fontSize: '1rem',
-                                            fontWeight: '500',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                        }}>
-                                            {release.title}
-                                        </h3>
-                                        <span style={{
-                                            fontSize: '0.75rem',
-                                            opacity: 0.5,
-                                        }}>
-                                            {release.artist}{release.date ? ` · ${release.date}` : ''}
-                                        </span>
-                                    </div>
-                                    <span style={{
-                                        fontSize: '0.85rem',
-                                        opacity: 0.4,
-                                        marginLeft: '12px',
-                                        flexShrink: 0,
-                                    }}>
-                                        &#x2197;
-                                    </span>
-                                </motion.a>
+                                />
                             </motion.div>
                         ))}
                     </div>
@@ -520,48 +424,18 @@ export default function Work() {
                             key={item.id}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: (projects.length + 1 + works.length + index) * 0.05 }}
                             style={{
                                 borderBottom: index < press.length - 1
                                     ? '1px solid rgba(0,0,0,0.08)'
                                     : 'none',
                             }}
                         >
-                            <motion.a
-                                href={item.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <LinkItem
+                                url={item.url}
+                                title={item.title}
+                                subtitle={`${item.source}${item.date ? ` · ${item.date}` : ''}`}
                                 onClick={() => trackOutboundClick(item.url, item.title)}
-                                whileHover={{ backgroundColor: 'rgba(0,0,0,0.03)' }}
-                                style={linkItemStyle}
-                            >
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <h3 style={{
-                                        margin: 0,
-                                        fontSize: '1rem',
-                                        fontWeight: '500',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                    }}>
-                                        {item.title}
-                                    </h3>
-                                    <span style={{
-                                        fontSize: '0.75rem',
-                                        opacity: 0.5,
-                                    }}>
-                                        {item.source}{item.date ? ` · ${item.date}` : ''}
-                                    </span>
-                                </div>
-                                <span style={{
-                                    fontSize: '0.85rem',
-                                    opacity: 0.4,
-                                    marginLeft: '12px',
-                                    flexShrink: 0,
-                                }}>
-                                    &#x2197;
-                                </span>
-                            </motion.a>
+                            />
                         </motion.div>
                     ))}
                 </div>
